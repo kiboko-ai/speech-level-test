@@ -141,9 +141,12 @@ Course Level: {course_level} (1-4 scale)
 Task:
 - Evaluate the student's performance in this single lesson using the rubric below.
 - Score each sub-criterion from 1.0 to 5.0 in 0.1 increments.
-- Take into account the student's course level when judging:
-  • Levels 1–2: focus on communication clarity, basic vocabulary growth, task completion.
-  • Levels 3–4: focus on accuracy, complex structures, fluency, and natural expression.
+- IMPORTANT: Adjust scoring based on course level {course_level}:
+  • Level 1: Be very lenient. Basic attempts = good (3.5-4.0), Clear simple speech = excellent (4.5-5.0)
+  • Level 2: Moderate. Simple accuracy = good (3.5-4.0), Some complexity = excellent (4.5-5.0)
+  • Level 3: Higher standards. Varied accuracy = good (3.5-4.0), Natural fluency = excellent (4.5-5.0)
+  • Level 4: Strict. Near-native = good (3.5-4.0), Professional = excellent (4.5-5.0)
+- The same performance should receive DIFFERENT scores based on level.
 
 Rubric categories:
 1. Content Relevance
@@ -357,8 +360,12 @@ Intonation Score (already calculated): {intonation_score:.1f}
 Task:
 - Evaluate the student's performance using the rubric.
 - Score each sub-criterion from 1.0 to 5.0 in 0.1 increments for detailed assessment.
-- Levels 1–2: focus on communication clarity, basic vocabulary growth.
-- Levels 3–4: focus on accuracy, complex structures, fluency.
+- IMPORTANT: Adjust scoring based on course level:
+  • Level 1: Be lenient. Basic communication attempts = 3.5-4.0, Clear simple sentences = 4.5-5.0
+  • Level 2: Moderate standards. Simple but accurate = 3.5-4.0, Some complexity = 4.5-5.0
+  • Level 3: Higher standards. Accurate with variety = 3.5-4.0, Natural fluency = 4.5-5.0
+  • Level 4: Strict standards. Near-native fluency = 3.5-4.0, Professional level = 4.5-5.0
+- Consider what is reasonable to expect at each level.
 
 Output JSON:
 {{
@@ -539,10 +546,27 @@ Output JSON:
             clarity = pronunciation_analysis['clarity_ratio']
             confidence = pronunciation_analysis['average_confidence']
 
-            # New formula: (metric - 0.6) * 10 + 1, clamped to 1.0-5.0
+            # Apply level-based adjustment
+            # Level 1-2: More lenient (bonus up to +1.0)
+            # Level 3-4: More strict (penalty up to -0.5)
+            level_adjustment = 0
+            if course_level <= 2:
+                # For beginners, boost scores based on effort
+                # 60% clarity for Level 1 is good effort = +0.5 to +1.0 bonus
+                level_adjustment = (3 - course_level) * 0.5  # Level 1: +1.0, Level 2: +0.5
+            else:
+                # For advanced, apply stricter standards
+                # 80% clarity for Level 4 is just average = -0.3 to -0.5 penalty
+                level_adjustment = (3 - course_level) * 0.25  # Level 3: 0, Level 4: -0.25
+
+            # Base formula: (metric - 0.6) * 10 + 1, clamped to 1.0-5.0
             # 60% → 1.0, 70% → 2.0, 80% → 3.0, 90% → 4.0, 100% → 5.0
-            pronunciation_score = max(1.0, min(5.0, (clarity - 0.6) * 10 + 1))
-            intonation_score = max(1.0, min(5.0, (confidence - 0.6) * 10 + 1))
+            base_pronunciation = (clarity - 0.6) * 10 + 1
+            base_intonation = (confidence - 0.6) * 10 + 1
+
+            # Apply level adjustment
+            pronunciation_score = max(1.0, min(5.0, base_pronunciation + level_adjustment))
+            intonation_score = max(1.0, min(5.0, base_intonation + level_adjustment))
 
             # Generate GPT-4 evaluation if LeMUR not available
             if not lemur_analysis or 'task_coverage' not in lemur_analysis:
@@ -679,8 +703,13 @@ def main():
         print(f"   • Cohesive Devices:   {results['cohesive_devices']:.1f}/5.0")
 
         print("\n4. DELIVERY:")
-        print(f"   • Pronunciation:      {results['pronunciation']:.1f}/5.0 (Clarity: {results['detailed_analysis']['pronunciation_details']['clarity_ratio']:.0%})")
-        print(f"   • Intonation/Stress:  {results['intonation_stress']:.1f}/5.0 (Confidence: {results['detailed_analysis']['pronunciation_details']['average_confidence']:.0%})")
+        level_note = ""
+        if results['course_level'] <= 2:
+            level_note = f" [+Level {results['course_level']} bonus]"
+        elif results['course_level'] == 4:
+            level_note = " [Level 4 strict]"
+        print(f"   • Pronunciation:      {results['pronunciation']:.1f}/5.0 (Clarity: {results['detailed_analysis']['pronunciation_details']['clarity_ratio']:.0%}){level_note}")
+        print(f"   • Intonation/Stress:  {results['intonation_stress']:.1f}/5.0 (Confidence: {results['detailed_analysis']['pronunciation_details']['average_confidence']:.0%}){level_note}")
 
         print("\n" + "-"*50)
         print(f"📈 AVERAGE SCORE: {results['average_score']:.1f}/5.0")
