@@ -535,8 +535,14 @@ Output JSON:
 
             # Step 9: Create evaluation using rubric format with pronunciation metrics
             # Use pronunciation analysis for Delivery scores
-            pronunciation_score = min(5.0, 1.0 + (pronunciation_analysis['clarity_ratio'] * 4))  # Clarity ratio to 1-5
-            intonation_score = min(5.0, 1.0 + (pronunciation_analysis['average_confidence'] * 4))  # Confidence to 1-5
+            # Map 60%-100% to 1.0-5.0 (60% = 1.0, 80% = 3.0, 100% = 5.0)
+            clarity = pronunciation_analysis['clarity_ratio']
+            confidence = pronunciation_analysis['average_confidence']
+
+            # New formula: (metric - 0.6) * 10 + 1, clamped to 1.0-5.0
+            # 60% → 1.0, 70% → 2.0, 80% → 3.0, 90% → 4.0, 100% → 5.0
+            pronunciation_score = max(1.0, min(5.0, (clarity - 0.6) * 10 + 1))
+            intonation_score = max(1.0, min(5.0, (confidence - 0.6) * 10 + 1))
 
             # Generate GPT-4 evaluation if LeMUR not available
             if not lemur_analysis or 'task_coverage' not in lemur_analysis:
