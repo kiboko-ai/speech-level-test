@@ -140,7 +140,7 @@ Course Level: {course_level} (1-4 scale)
 
 Task:
 - Evaluate the student's performance in this single lesson using the rubric below.
-- Score each sub-criterion from 1.0 to 5.0 in 0.5 increments.
+- Score each sub-criterion from 1.0 to 5.0 in 0.1 increments.
 - Take into account the student's course level when judging:
   • Levels 1–2: focus on communication clarity, basic vocabulary growth, task completion.
   • Levels 3–4: focus on accuracy, complex structures, fluency, and natural expression.
@@ -356,7 +356,7 @@ Intonation Score (already calculated): {intonation_score:.1f}
 
 Task:
 - Evaluate the student's performance using the rubric.
-- Score each sub-criterion from 1.0 to 5.0 in 0.5 increments.
+- Score each sub-criterion from 1.0 to 5.0 in 0.1 increments for detailed assessment.
 - Levels 1–2: focus on communication clarity, basic vocabulary growth.
 - Levels 3–4: focus on accuracy, complex structures, fluency.
 
@@ -376,7 +376,7 @@ Output JSON:
             response = client.chat.completions.create(
                 model="gpt-4-turbo-preview",
                 messages=[
-                    {"role": "system", "content": "You are an expert English evaluator. Provide scores in 0.5 increments."},
+                    {"role": "system", "content": "You are an expert English evaluator. Provide scores in 0.1 increments (e.g., 3.1, 3.2, 3.3) for detailed assessment."},
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_object"},
@@ -567,8 +567,8 @@ Output JSON:
                 "vocabulary_use": gpt_evaluation.get('vocabulary_use', 3.0),
                 "logical_flow": gpt_evaluation.get('logical_flow', 3.0),
                 "cohesive_devices": gpt_evaluation.get('cohesive_devices', 3.0),
-                "pronunciation": round(pronunciation_score * 2) / 2,  # Round to 0.5 increments
-                "intonation_stress": round(intonation_score * 2) / 2,  # Round to 0.5 increments
+                "pronunciation": round(pronunciation_score, 1),  # Round to 0.1 increments
+                "intonation_stress": round(intonation_score, 1),  # Round to 0.1 increments
                 "average_score": round(
                     (gpt_evaluation.get('task_coverage', 3.0) +
                      gpt_evaluation.get('appropriateness', 3.0) +
@@ -576,8 +576,8 @@ Output JSON:
                      gpt_evaluation.get('vocabulary_use', 3.0) +
                      gpt_evaluation.get('logical_flow', 3.0) +
                      gpt_evaluation.get('cohesive_devices', 3.0) +
-                     pronunciation_score +
-                     intonation_score) / 8, 1),
+                     round(pronunciation_score, 1) +
+                     round(intonation_score, 1)) / 8, 1),
                 "vocab_phrases_used": gpt_evaluation.get('vocab_phrases_used', []),
                 "feedback": gpt_evaluation.get('feedback', ''),
 
