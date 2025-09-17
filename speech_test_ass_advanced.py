@@ -120,44 +120,65 @@ class AssemblyAIAdvancedEvaluator:
             else:
                 raise Exception(f"Polling failed: {response.text}")
 
-    def use_lemur_analysis(self, transcript_id: str, student_text: str, course_level: int) -> Dict:
+    def use_lemur_analysis(self, transcript_id: str, student_text: str, full_transcript: str,
+                          course_level: int, student_speaker: str) -> Dict:
         """Use LeMUR (AI reasoning engine) for advanced analysis"""
         print("🤖 Analyzing with LeMUR AI reasoning engine...")
 
-        # Advanced prompt for educational analysis
-        lemur_prompt = f"""You are an expert English language evaluator analyzing student speech.
+        # Advanced prompt matching the exact rubric format
+        lemur_prompt = f"""You are an English speaking test evaluator.
+Input: 1) Transcript of the current lesson, 2) Course level (1–4), 3) Student speaker role.
 
-Course Level: {course_level}/4
-Student Text: {student_text}
+Full Transcript:
+{full_transcript}
 
-Perform comprehensive analysis:
+Student's Speech Only:
+{student_text}
 
-1. PRONUNCIATION ASSESSMENT:
-   - Identify specific pronunciation errors
-   - Assess clarity and intelligibility
-   - Rate fluency and rhythm (1-5)
+Student Speaker: {student_speaker}
+Course Level: {course_level} (1-4 scale)
 
-2. LANGUAGE PROFICIENCY:
-   - Grammar accuracy and complexity
-   - Vocabulary range and appropriateness
-   - Sentence structure variety
+Task:
+- Evaluate the student's performance in this single lesson using the rubric below.
+- Score each sub-criterion from 1.0 to 5.0 in 0.5 increments.
+- Take into account the student's course level when judging:
+  • Levels 1–2: focus on communication clarity, basic vocabulary growth, task completion.
+  • Levels 3–4: focus on accuracy, complex structures, fluency, and natural expression.
 
-3. COMMUNICATION SKILLS:
-   - Coherence and organization
-   - Task completion effectiveness
-   - Interactive communication ability
+Rubric categories:
+1. Content Relevance
+   - Task Coverage (answering the prompt fully)
+   - Appropriateness (staying on-topic)
+2. Accuracy
+   - Grammar Control (sentence correctness, tense, structure)
+   - Vocabulary Use (range, appropriateness, precision)
+3. Coherence
+   - Logical Flow (clear reasoning, structured ideas)
+   - Cohesive Devices (use of linking words, transitions)
+4. Delivery
+   - Pronunciation (clarity, understandable)
+   - Intonation & Stress (natural rhythm, emphasis)
 
-4. SPECIFIC FEEDBACK:
-   - Strengths to reinforce
-   - Priority areas for improvement
-   - Concrete practice suggestions
+Also:
+- Identify important vocabulary/phrases actually used (TOEIC, OPIc, academic/professional relevance).
+- Provide concise feedback highlighting 1–2 strengths and 1–2 weaknesses.
 
-5. LEVEL ASSESSMENT:
-   - Current proficiency estimate
-   - Readiness for next level
-   - Specific skill gaps
-
-Provide detailed, actionable feedback in JSON format with numerical scores (1-5) and specific examples."""
+Output JSON format:
+{{
+  "course_level": {course_level},
+  "student_speaker": "{student_speaker}",
+  "task_coverage": <score>,
+  "appropriateness": <score>,
+  "grammar_control": <score>,
+  "vocabulary_use": <score>,
+  "logical_flow": <score>,
+  "cohesive_devices": <score>,
+  "pronunciation": <score>,
+  "intonation_stress": <score>,
+  "average_score": <average>,
+  "vocab_phrases_used": [ "<word_or_phrase_1>", "<word_or_phrase_2>", ... ],
+  "feedback": "<short summary of strengths and weaknesses>"
+}}"""
 
         # Submit LeMUR request
         lemur_config = {
@@ -312,6 +333,69 @@ Provide detailed, actionable feedback in JSON format with numerical scores (1-5)
         print(f"🎯 Final decision: Speaker {student_speaker} identified as student")
         return student_speaker
 
+    def generate_rubric_evaluation(self, student_text: str, full_transcript: str,
+                                  course_level: int, student_speaker: str,
+                                  pronunciation_score: float, intonation_score: float) -> Dict:
+        """Generate evaluation using GPT-4 with the rubric format"""
+        from openai import OpenAI
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        prompt = f"""You are an English speaking test evaluator.
+
+Full Transcript:
+{full_transcript[:2000]}  # Limit for token management
+
+Student's Speech Only:
+{student_text[:1000]}
+
+Student Speaker: {student_speaker}
+Course Level: {course_level}
+
+Pronunciation Score (already calculated): {pronunciation_score:.1f}
+Intonation Score (already calculated): {intonation_score:.1f}
+
+Task:
+- Evaluate the student's performance using the rubric.
+- Score each sub-criterion from 1.0 to 5.0 in 0.5 increments.
+- Levels 1–2: focus on communication clarity, basic vocabulary growth.
+- Levels 3–4: focus on accuracy, complex structures, fluency.
+
+Output JSON:
+{{
+  "task_coverage": <score>,
+  "appropriateness": <score>,
+  "grammar_control": <score>,
+  "vocabulary_use": <score>,
+  "logical_flow": <score>,
+  "cohesive_devices": <score>,
+  "vocab_phrases_used": ["phrase1", "phrase2"],
+  "feedback": "1-2 strengths and 1-2 weaknesses"
+}}"""
+
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4-turbo-preview",
+                messages=[
+                    {"role": "system", "content": "You are an expert English evaluator. Provide scores in 0.5 increments."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.3
+            )
+            return json.loads(response.choices[0].message.content)
+        except:
+            # Fallback scores
+            return {
+                "task_coverage": 3.0,
+                "appropriateness": 3.0,
+                "grammar_control": 3.0,
+                "vocabulary_use": 3.0,
+                "logical_flow": 3.0,
+                "cohesive_devices": 3.0,
+                "vocab_phrases_used": [],
+                "feedback": "Evaluation could not be completed."
+            }
+
     def advanced_pronunciation_analysis(self, result: Dict, target_speaker: str) -> Dict:
         """Enhanced pronunciation analysis with Universal-1 data"""
 
@@ -429,7 +513,14 @@ Provide detailed, actionable feedback in JSON format with numerical scores (1-5)
             # Step 7: LeMUR AI analysis (optional)
             lemur_analysis = {}
             if use_lemur and student_text.strip():
-                lemur_analysis = self.use_lemur_analysis(transcript_id, student_text.strip(), course_level)
+                full_transcript = result.get('text', '')
+                lemur_analysis = self.use_lemur_analysis(
+                    transcript_id,
+                    student_text.strip(),
+                    full_transcript,
+                    course_level,
+                    student_speaker
+                )
 
             # Step 8: Enhanced insights
             insights = {
@@ -442,38 +533,67 @@ Provide detailed, actionable feedback in JSON format with numerical scores (1-5)
                 "audio_duration": result.get('audio_duration', 0) / 1000  # Convert to seconds
             }
 
-            # Step 9: Compile advanced results
+            # Step 9: Create evaluation using rubric format with pronunciation metrics
+            # Use pronunciation analysis for Delivery scores
+            pronunciation_score = min(5.0, 1.0 + (pronunciation_analysis['clarity_ratio'] * 4))  # Clarity ratio to 1-5
+            intonation_score = min(5.0, 1.0 + (pronunciation_analysis['average_confidence'] * 4))  # Confidence to 1-5
+
+            # Generate GPT-4 evaluation if LeMUR not available
+            if not lemur_analysis or 'task_coverage' not in lemur_analysis:
+                gpt_evaluation = self.generate_rubric_evaluation(
+                    student_text.strip(),
+                    result.get('text', ''),
+                    course_level,
+                    student_speaker,
+                    pronunciation_score,
+                    intonation_score
+                )
+            else:
+                gpt_evaluation = lemur_analysis
+
+            # Compile final results in rubric format
             return {
+                # Metadata
                 "audio_file": audio_path,
                 "model_used": model_type if model_type else "default",
-                "course_level": course_level,
                 "evaluation_timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
 
-                # Speaker analysis
+                # Rubric scores (matching exact format)
+                "course_level": course_level,
                 "student_speaker": student_speaker,
-                "speaker_distribution": speaker_words,
-                "student_word_count": len(student_text.split()),
+                "task_coverage": gpt_evaluation.get('task_coverage', 3.0),
+                "appropriateness": gpt_evaluation.get('appropriateness', 3.0),
+                "grammar_control": gpt_evaluation.get('grammar_control', 3.0),
+                "vocabulary_use": gpt_evaluation.get('vocabulary_use', 3.0),
+                "logical_flow": gpt_evaluation.get('logical_flow', 3.0),
+                "cohesive_devices": gpt_evaluation.get('cohesive_devices', 3.0),
+                "pronunciation": round(pronunciation_score * 2) / 2,  # Round to 0.5 increments
+                "intonation_stress": round(intonation_score * 2) / 2,  # Round to 0.5 increments
+                "average_score": round(
+                    (gpt_evaluation.get('task_coverage', 3.0) +
+                     gpt_evaluation.get('appropriateness', 3.0) +
+                     gpt_evaluation.get('grammar_control', 3.0) +
+                     gpt_evaluation.get('vocabulary_use', 3.0) +
+                     gpt_evaluation.get('logical_flow', 3.0) +
+                     gpt_evaluation.get('cohesive_devices', 3.0) +
+                     pronunciation_score +
+                     intonation_score) / 8, 1),
+                "vocab_phrases_used": gpt_evaluation.get('vocab_phrases_used', []),
+                "feedback": gpt_evaluation.get('feedback', ''),
 
-                # Transcription
-                "full_transcript": result.get('text', ''),
-                "student_text": student_text.strip(),
-                "confidence_score": result.get('confidence', 0),
-
-                # Advanced pronunciation
-                "pronunciation_analysis": pronunciation_analysis,
-
-                # AI insights
-                "assemblyai_insights": insights,
-
-                # LeMUR analysis
-                "lemur_analysis": lemur_analysis,
-
-                # Performance metrics
-                "processing_time": result.get('audio_duration', 0) / 1000,
-                "model_performance": {
-                    "overall_confidence": result.get('confidence', 0),
-                    "language_detection_confidence": result.get('language_confidence', 0),
-                    "speaker_separation_quality": len(utterances) / max(1, len(set(speaker_words.keys())))
+                # Additional detailed data
+                "detailed_analysis": {
+                    "student_word_count": len(student_text.split()),
+                    "full_transcript": result.get('text', ''),
+                    "student_text": student_text.strip(),
+                    "speaker_distribution": speaker_words,
+                    "pronunciation_details": pronunciation_analysis,
+                    "assemblyai_insights": insights,
+                    "model_performance": {
+                        "overall_confidence": result.get('confidence', 0),
+                        "language_detection_confidence": result.get('language_confidence', 0),
+                        "processing_time": result.get('audio_duration', 0) / 1000
+                    }
                 }
             }
 
@@ -527,46 +647,54 @@ def main():
             audio_file, course_level, model_type, use_lemur
         )
 
-        # Display results
+        # Display results in new rubric format
         print("\n" + "="*70)
-        print("                 ADVANCED EVALUATION RESULTS")
+        print("           ENGLISH SPEAKING EVALUATION RESULTS")
         print("="*70)
 
-        print(f"\n🧠 Model Used: {results.get('model_used', 'Default') if results.get('model_used') else 'Default (auto)'}")
+        print(f"\n📊 Course Level: {results['course_level']}")
         print(f"👤 Student: Speaker {results['student_speaker']}")
-        print(f"💬 Student Words: {results['student_word_count']}")
-        print(f"⏱️ Audio Duration: {results['assemblyai_insights']['audio_duration']:.1f}s")
+        print(f"🧠 Model: {results.get('model_used', 'Default')}")
 
-        # Pronunciation analysis
-        pronunciation = results["pronunciation_analysis"]
-        print(f"\n🎤 Advanced Pronunciation Analysis:")
-        print(f"   Score: {pronunciation['pronunciation_score']}/5.0")
-        print(f"   Average Confidence: {pronunciation['average_confidence']:.1%}")
-        print(f"   Clarity Ratio: {pronunciation['clarity_ratio']:.1%}")
+        print("\n" + "-"*50)
+        print("                    RUBRIC SCORES")
+        print("-"*50)
 
-        clarity = pronunciation['clarity_distribution']
-        print(f"\n   Word Clarity Distribution:")
-        print(f"   • Very Clear: {clarity['very_clear']} words")
-        print(f"   • Clear: {clarity['clear']} words")
-        print(f"   • Unclear: {clarity['unclear']} words")
-        print(f"   • Very Unclear: {clarity['very_unclear']} words")
+        print("\n1. CONTENT RELEVANCE:")
+        print(f"   • Task Coverage:      {results['task_coverage']:.1f}/5.0")
+        print(f"   • Appropriateness:    {results['appropriateness']:.1f}/5.0")
 
-        # LeMUR analysis
-        if results.get('lemur_analysis') and 'lemur_analysis' not in str(results['lemur_analysis']):
-            print(f"\n🤖 LeMUR AI Analysis:")
-            lemur = results['lemur_analysis']
-            if isinstance(lemur, dict):
-                for key, value in lemur.items():
-                    if isinstance(value, (int, float)):
-                        print(f"   {key}: {value}")
-                    elif len(str(value)) < 100:
-                        print(f"   {key}: {value}")
+        print("\n2. ACCURACY:")
+        print(f"   • Grammar Control:    {results['grammar_control']:.1f}/5.0")
+        print(f"   • Vocabulary Use:     {results['vocabulary_use']:.1f}/5.0")
 
-        # Insights
-        insights = results["assemblyai_insights"]
-        if insights['highlights']:
-            print(f"\n🔍 Key Phrases:")
-            for highlight in insights['highlights']:
+        print("\n3. COHERENCE:")
+        print(f"   • Logical Flow:       {results['logical_flow']:.1f}/5.0")
+        print(f"   • Cohesive Devices:   {results['cohesive_devices']:.1f}/5.0")
+
+        print("\n4. DELIVERY:")
+        print(f"   • Pronunciation:      {results['pronunciation']:.1f}/5.0 (Clarity: {results['detailed_analysis']['pronunciation_details']['clarity_ratio']:.0%})")
+        print(f"   • Intonation/Stress:  {results['intonation_stress']:.1f}/5.0 (Confidence: {results['detailed_analysis']['pronunciation_details']['average_confidence']:.0%})")
+
+        print("\n" + "-"*50)
+        print(f"📈 AVERAGE SCORE: {results['average_score']:.1f}/5.0")
+        print("-"*50)
+
+        # Vocabulary
+        if results.get('vocab_phrases_used'):
+            print(f"\n📝 IMPORTANT VOCABULARY/PHRASES USED:")
+            for i, phrase in enumerate(results['vocab_phrases_used'][:10], 1):
+                print(f"   {i}. {phrase}")
+
+        # Feedback
+        if results.get('feedback'):
+            print(f"\n💬 FEEDBACK:")
+            print(f"   {results['feedback']}")
+
+        # Additional insights from AssemblyAI
+        if results.get('detailed_analysis', {}).get('assemblyai_insights', {}).get('highlights'):
+            print(f"\n🔍 KEY TOPICS DETECTED:")
+            for highlight in results['detailed_analysis']['assemblyai_insights']['highlights']:
                 print(f"   • {highlight.get('text', 'N/A')}")
 
         # Save results
