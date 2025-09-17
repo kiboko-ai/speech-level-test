@@ -57,14 +57,17 @@ class AssemblyAIEvaluator:
             # Minimal config for faster processing
             config = {
                 "audio_url": upload_url,
-                "speaker_labels": True,
-                "punctuate": True
+                "speaker_labels": True,  # 화자 구분 활성화
+                "speakers_expected": 2,   # 예상되는 화자 수 (선생님+학생)
+                "punctuate": True,
+                "format_text": True
             }
         else:
             # Full config with features
             config = {
                 "audio_url": upload_url,
-                "speaker_labels": True,
+                "speaker_labels": True,  # 화자 구분 활성화
+                "speakers_expected": 2,   # 예상되는 화자 수 (선생님+학생)
                 "punctuate": True,
                 "format_text": True,
                 "auto_highlights": True

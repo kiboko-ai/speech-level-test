@@ -52,26 +52,26 @@ class AssemblyAIAdvancedEvaluator:
         else:
             print("🧠 Using default AssemblyAI model...")
 
-        # Advanced configuration
+        # Advanced configuration (참조: Next.js API 코드)
         config = {
             "audio_url": upload_url,
 
-            # Core features
-            "speaker_labels": True,
-            "speakers_expected": 2,  # Hint: teacher + student
+            # Core features - 화자 구분 설정
+            "speaker_labels": True,      # 화자 구분 활성화
+            "speakers_expected": 2,       # 예상되는 화자 수 (선생님+학생)
 
-            # Language and quality
-            "language_detection": True,  # Auto-detect language
-            "punctuate": True,
-            "format_text": True,
-            "disfluencies": True,  # Capture "um", "ah"
+            # Language and quality settings
+            "language_detection": True,  # 자동 언어 감지
+            "punctuate": True,           # 구두점 추가
+            "format_text": True,         # 텍스트 포맷팅
+            "disfluencies": True,        # "um", "ah" 등 캡처
 
-            # Advanced analysis
-            "sentiment_analysis": True,
-            "entity_detection": True,
-            "auto_highlights": True,
+            # Advanced analysis features
+            "sentiment_analysis": True,  # 감정 분석
+            "entity_detection": True,    # 개체명 인식
+            "auto_highlights": True,     # 주요 구문 하이라이트
 
-            # Quality settings
+            # Quality boost
             "word_boost": ["pronunciation", "fluency", "grammar", "vocabulary"],
         }
 
