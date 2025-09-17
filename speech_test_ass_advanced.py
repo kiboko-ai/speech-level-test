@@ -221,7 +221,7 @@ Output JSON format:
             return {"lemur_analysis": f"LeMUR error: {str(e)}"}
 
     def identify_student_by_context(self, utterances: List[Dict]) -> str:
-        """Identify student speaker using conversation context and patterns"""
+        """Identify student speaker using AI-powered conversation context analysis"""
 
         if not utterances:
             return "A"
@@ -231,86 +231,82 @@ Output JSON format:
         if len(speakers) == 1:
             return speakers[0]
 
-        print("🔍 Analyzing conversation context to identify student...")
+        print("🔍 Using AI to analyze conversation context and identify roles...")
 
-        # Analyze each speaker's characteristics
-        speaker_analysis = {}
+        # Prepare conversation for AI analysis
+        conversation_text = ""
+        for utterance in utterances[:20]:  # Limit to first 20 utterances for context
+            speaker = utterance['speaker']
+            text = utterance['text']
+            conversation_text += f"{speaker}: {text}\n"
 
-        for speaker in speakers:
-            speaker_utterances = [u for u in utterances if u['speaker'] == speaker]
-            all_text = " ".join([u['text'] for u in speaker_utterances])
+        # Use GPT-4 to analyze the conversation context
+        from openai import OpenAI
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-            # Calculate metrics for each speaker
-            analysis = {
-                'total_words': len(all_text.split()),
-                'utterance_count': len(speaker_utterances),
-                'avg_utterance_length': len(all_text.split()) / len(speaker_utterances),
-                'sample_texts': [u['text'][:100] for u in speaker_utterances[:3]]
-            }
+        prompt = f"""Analyze this English lesson conversation and identify who is the student and who is the teacher.
 
-            # Teacher indicators (질문, 지시, 피드백 패턴)
-            teacher_patterns = [
-                # Questions
-                r'\b(what|where|when|why|how|can you|could you|would you|do you|did you|will you|are you|is it)\b',
-                # Instructions
-                r'\b(tell me|explain|describe|talk about|let\'s|now|next|first|then|finally)\b',
-                # Feedback
-                r'\b(good|great|excellent|nice|well done|correct|right|yes|okay|I see|interesting)\b',
-                # Teacher language
-                r'\b(lesson|homework|assignment|practice|study|learn|understand|remember)\b',
-                # Corrections
-                r'\b(actually|no|not quite|try again|listen|repeat|pronunciation)\b'
-            ]
+Conversation:
+{conversation_text}
 
-            # Student indicators (답변, 불확실성, 학습자 언어)
-            student_patterns = [
-                # Uncertainty
-                r'\b(I think|maybe|perhaps|I\'m not sure|I don\'t know|um|uh|well)\b',
-                # Learning language
-                r'\b(I learned|I studied|I practice|I try|I want to|I like|I don\'t understand)\b',
-                # Response patterns
-                r'\b(yes|no|okay|alright|sure|of course)\s*[.!]',
-                # Personal references
-                r'\b(I|me|my|mine|myself)\b',
-                # Hesitation markers
-                r'\b(um|uh|er|ah|well|so|like)\b'
-            ]
+Analyze the context, content, and interaction patterns:
+1. Who is asking learning questions vs teaching questions?
+2. Who is giving instructions vs following them?
+3. Who is providing feedback vs receiving it?
+4. Who is explaining concepts vs trying to understand them?
+5. Who shows authority vs deference?
+6. Who demonstrates teaching expertise vs learning attempts?
 
-            import re
+Based on the actual conversation content and context, identify:
+- Which speaker (A or B) is the STUDENT
+- Confidence level (high/medium/low)
+- Key evidence from the conversation
 
-            # Count pattern matches
-            teacher_score = 0
-            student_score = 0
+Output JSON:
+{{
+  "student_speaker": "A" or "B",
+  "teacher_speaker": "A" or "B",
+  "confidence": "high/medium/low",
+  "student_evidence": ["evidence 1", "evidence 2"],
+  "teacher_evidence": ["evidence 1", "evidence 2"]
+}}"""
 
-            for pattern in teacher_patterns:
-                teacher_score += len(re.findall(pattern, all_text.lower()))
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4-turbo-preview",
+                messages=[
+                    {"role": "system", "content": "You are an expert at analyzing educational conversations and identifying teacher-student dynamics based on context."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.1,  # Low temperature for consistency
+                max_tokens=300
+            )
 
-            for pattern in student_patterns:
-                student_score += len(re.findall(pattern, all_text.lower()))
+            analysis = json.loads(response.choices[0].message.content)
 
-            # Conversation position analysis
-            first_speaker_bonus = 5 if speaker == utterances[0]['speaker'] else 0
-            teacher_score += first_speaker_bonus  # Teachers often start conversations
+            print("\n📊 AI Context Analysis:")
+            print(f"   Student: Speaker {analysis['student_speaker']}")
+            print(f"   Teacher: Speaker {analysis['teacher_speaker']}")
+            print(f"   Confidence: {analysis['confidence']}")
 
-            # Question vs answer pattern
-            questions = len(re.findall(r'\?', all_text))
-            if questions > 0:
-                teacher_score += questions * 3
+            if analysis.get('student_evidence'):
+                print(f"   Student Evidence:")
+                for evidence in analysis['student_evidence'][:2]:
+                    print(f"      - {evidence}")
 
-            # Length-based scoring (teachers often give longer explanations)
-            if analysis['avg_utterance_length'] > 15:
-                teacher_score += 2
-            elif analysis['avg_utterance_length'] < 8:
-                student_score += 2
+            if analysis.get('teacher_evidence'):
+                print(f"   Teacher Evidence:")
+                for evidence in analysis['teacher_evidence'][:2]:
+                    print(f"      - {evidence}")
 
-            analysis.update({
-                'teacher_score': teacher_score,
-                'student_score': student_score,
-                'likely_role': 'teacher' if teacher_score > student_score else 'student',
-                'confidence': abs(teacher_score - student_score)
-            })
+            return analysis['student_speaker']
 
-            speaker_analysis[speaker] = analysis
+        except Exception as e:
+            print(f"⚠️ AI analysis failed, using pattern-based fallback: {e}")
+
+            # Fallback to pattern analysis if AI fails
+            speaker_analysis = {}
 
         # Display analysis for debugging
         print("\n📊 Speaker Analysis Results:")
