@@ -1,0 +1,593 @@
+{
+  "audio_file": "/Users/jason/downloads/asdf.mp3",
+  "model_used": "default",
+  "evaluation_timestamp": "2025-09-19 09:16:12",
+  "course_level": 4,
+  "student_speaker": "B",
+  "task_coverage": 4.2,
+  "appropriateness": 4.0,
+  "grammar_control": 3.7,
+  "vocabulary_use": 3.8,
+  "logical_flow": 4.1,
+  "cohesive_devices": 3.9,
+  "pronunciation": 4.2,
+  "intonation_stress": 4.4,
+  "average_score": 4.0,
+  "vocab_phrases_used": [
+    "primitive form of a child",
+    "fantasy world"
+  ],
+  "feedback": "Strengths: You demonstrated a good ability to cover the task by providing a detailed summary of the movie, including its themes and your personal reflection on it. Your logical flow in explaining the plot and thematic elements of the movie was coherent and easy to follow. Weaknesses: There were some grammatical inaccuracies and hesitations ('um', 'uh') that impacted the overall fluency. Additionally, the use of gender pronouns was inconsistent ('finally he becomes an adult'), which could cause confusion. Improving grammatical control and reducing filler words would enhance your clarity and overall effectiveness in communication.",
+  "detailed_analysis": {
+    "student_word_count": 256,
+    "full_transcript": "What's the last movie you watched and what did you think of it? The last movie, um, very impressive movie. Was, uh, was poor, um, things. I forgot the director's name. But it was a movie about a girl, uh, who had um. Brain implant of a dead child. Um, and the body got a brain implanted. Was. Was her mother who took her own life from, from this point. This is very interesting, but the movie, um, shows. At first it's like a fantasy movie, but later on it's um. It's quite, quite a philosophical drama. And um, it observes the primitive form of a child, but child in a grown um, up body. And it looks at the world with a child's perspective. That was very interesting to me because, um, her body is an adult. So everyone treats her as an adult. But in her perspective everything looks like a fantasy world. And she's learning a bit more bit by bit. And finally he becomes an adult. In this, uh, journey, she learns a lot and she um, learns the world. And that was very interesting to me. That was a really thoughtful summary. Just a couple of small corrections. Instead of the body get brain implanted, you can say the body that had the brain implanted. Uh, and instead of he becomes an adult, you can say she becomes an adult. Since we're talking about a female character. Uh, but overall your explanation was really engaging and clear. Great job. Thank you. Um, do you have any more questions? Absolutely. Um, I'm curious. Do you have a favorite genre of movies or does your taste vary depending on your mood? Usually depends on my mood, but, um, I guess my. My favorite genre is drama, um, or a sci Fi because I'm one of my. Um. Yeah, it varies. But yeah, because my favorite movies are, um. Begin Again, Um, Blade Runner, Another Round. Um, Cinema Paradiso. Um, yeah, those kind of things. Usually it's drama, um, or Sci Fi. That's a fantastic mix of films. I, uh, love that variety. Uh, if you ever want to chat more about them or need any recommendations, just let me know. I think it's done. Uh, for today. Thank you. You're very welcome. I'm glad we got to tet. If you ever want to talk again or practice more, just let me know. Have a great day.",
+    "student_text": "The last movie, um, very impressive movie. Was, uh, was poor, um, things. I forgot the director's name. But it was a movie about a girl, uh, who had um. Brain implant of a dead child. Um, and the body got a brain implanted. Was. Was her mother who took her own life from, from this point. This is very interesting, but the movie, um, shows. At first it's like a fantasy movie, but later on it's um. It's quite, quite a philosophical drama. And um, it observes the primitive form of a child, but child in a grown um, up body. And it looks at the world with a child's perspective. That was very interesting to me because, um, her body is an adult. So everyone treats her as an adult. But in her perspective everything looks like a fantasy world. And she's learning a bit more bit by bit. And finally he becomes an adult. In this, uh, journey, she learns a lot and she um, learns the world. And that was very interesting to me. Thank you. Um, do you have any more questions? Usually depends on my mood, but, um, I guess my. My favorite genre is drama, um, or a sci Fi because I'm one of my. Um. Yeah, it varies. But yeah, because my favorite movies are, um. Begin Again, Um, Blade Runner, Another Round. Um, Cinema Paradiso. Um, yeah, those kind of things. Usually it's drama, um, or Sci Fi. I think it's done. Uh, for today. Thank you.",
+    "speaker_distribution": {
+      "A": 153,
+      "B": 256
+    },
+    "pronunciation_details": {
+      "pronunciation_score": 5.0,
+      "average_confidence": 0.965,
+      "total_words": 256,
+      "clarity_distribution": {
+        "very_clear": 225,
+        "clear": 18,
+        "unclear": 10,
+        "very_unclear": 3
+      },
+      "clarity_ratio": 0.949,
+      "problematic_words": [
+        {
+          "word": "Was.",
+          "confidence": 0.56103516,
+          "timestamp": 29.41
+        },
+        {
+          "word": "But",
+          "confidence": 0.5307617,
+          "timestamp": 83.2
+        },
+        {
+          "word": "world.",
+          "confidence": 0.5292969,
+          "timestamp": 89.08
+        }
+      ]
+    },
+    "assemblyai_insights": {
+      "highlights": [
+        {
+          "count": 1,
+          "rank": 0.07,
+          "text": "Great job",
+          "timestamps": [
+            {
+              "start": 130330,
+              "end": 130930
+            }
+          ]
+        },
+        {
+          "count": 1,
+          "rank": 0.07,
+          "text": "Blade Runner",
+          "timestamps": [
+            {
+              "start": 170340,
+              "end": 171300
+            }
+          ]
+        },
+        {
+          "count": 2,
+          "rank": 0.07,
+          "text": "Sci Fi",
+          "timestamps": [
+            {
+              "start": 155460,
+              "end": 156060
+            },
+            {
+              "start": 183700,
+              "end": 184500
+            }
+          ]
+        },
+        {
+          "count": 1,
+          "rank": 0.06,
+          "text": "small corrections",
+          "timestamps": [
+            {
+              "start": 115290,
+              "end": 116210
+            }
+          ]
+        },
+        {
+          "count": 4,
+          "rank": 0.06,
+          "text": "brain",
+          "timestamps": [
+            {
+              "start": 20660,
+              "end": 21080
+            },
+            {
+              "start": 28370,
+              "end": 28690
+            },
+            {
+              "start": 117810,
+              "end": 118050
+            },
+            {
+              "start": 120050,
+              "end": 120250
+            }
+          ]
+        }
+      ],
+      "sentiment": [
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "A",
+          "text": "What's the last movie you watched and what did you think of it?",
+          "start": 160,
+          "end": 2640,
+          "confidence": 0.9135895
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "B",
+          "text": "The last movie, um, very impressive movie.",
+          "start": 5040,
+          "end": 9280,
+          "confidence": 0.9745958
+        },
+        {
+          "sentiment": "NEGATIVE",
+          "speaker": "B",
+          "text": "Was, uh, was poor, um, things.",
+          "start": 9280,
+          "end": 12720,
+          "confidence": 0.69944185
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "I forgot the director's name.",
+          "start": 13440,
+          "end": 15720,
+          "confidence": 0.5374529
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "But it was a movie about a girl, uh, who had um.",
+          "start": 15720,
+          "end": 20660,
+          "confidence": 0.8584584
+        },
+        {
+          "sentiment": "NEGATIVE",
+          "speaker": "B",
+          "text": "Brain implant of a dead child.",
+          "start": 20660,
+          "end": 23920,
+          "confidence": 0.90697736
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "Um, and the body got a brain implanted.",
+          "start": 24820,
+          "end": 29410,
+          "confidence": 0.5992826
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "Was.",
+          "start": 29410,
+          "end": 29770,
+          "confidence": 0.60893846
+        },
+        {
+          "sentiment": "NEGATIVE",
+          "speaker": "B",
+          "text": "Was her mother who took her own life from, from this point.",
+          "start": 30570,
+          "end": 37010,
+          "confidence": 0.7399645
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "B",
+          "text": "This is very interesting, but the movie, um, shows.",
+          "start": 37010,
+          "end": 41290,
+          "confidence": 0.96903193
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "At first it's like a fantasy movie, but later on it's um.",
+          "start": 42010,
+          "end": 47800,
+          "confidence": 0.6760786
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "It's quite, quite a philosophical drama.",
+          "start": 47800,
+          "end": 51770,
+          "confidence": 0.6018548
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "And um, it observes the primitive form of a child, but child in a grown um, up body.",
+          "start": 52520,
+          "end": 66040,
+          "confidence": 0.8038076
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "And it looks at the world with a child's perspective.",
+          "start": 66520,
+          "end": 74600,
+          "confidence": 0.77952635
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "B",
+          "text": "That was very interesting to me because, um, her body is an adult.",
+          "start": 75080,
+          "end": 79480,
+          "confidence": 0.97098875
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "So everyone treats her as an adult.",
+          "start": 80080,
+          "end": 83200,
+          "confidence": 0.64031243
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "But in her perspective everything looks like a fantasy world.",
+          "start": 83200,
+          "end": 89360,
+          "confidence": 0.6504654
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "B",
+          "text": "And she's learning a bit more bit by bit.",
+          "start": 89920,
+          "end": 94400,
+          "confidence": 0.5850236
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "And finally he becomes an adult.",
+          "start": 94880,
+          "end": 97120,
+          "confidence": 0.7149759
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "In this, uh, journey, she learns a lot and she um, learns the world.",
+          "start": 100080,
+          "end": 107200,
+          "confidence": 0.5303595
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "B",
+          "text": "And that was very interesting to me.",
+          "start": 107890,
+          "end": 109570,
+          "confidence": 0.977099
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "A",
+          "text": "That was a really thoughtful summary.",
+          "start": 111970,
+          "end": 113730,
+          "confidence": 0.9193536
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "A",
+          "text": "Just a couple of small corrections.",
+          "start": 113970,
+          "end": 116210,
+          "confidence": 0.79044837
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "A",
+          "text": "Instead of the body get brain implanted, you can say the body that had the brain implanted.",
+          "start": 116210,
+          "end": 120930,
+          "confidence": 0.56976944
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "A",
+          "text": "Uh, and instead of he becomes an adult, you can say she becomes an adult.",
+          "start": 121200,
+          "end": 125090,
+          "confidence": 0.55770403
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "A",
+          "text": "Since we're talking about a female character.",
+          "start": 125090,
+          "end": 127330,
+          "confidence": 0.8887879
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "A",
+          "text": "Uh, but overall your explanation was really engaging and clear.",
+          "start": 127480,
+          "end": 130330,
+          "confidence": 0.92647266
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "A",
+          "text": "Great job.",
+          "start": 130330,
+          "end": 130930,
+          "confidence": 0.9313075
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "B",
+          "text": "Thank you.",
+          "start": 132770,
+          "end": 133410,
+          "confidence": 0.85296494
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "Um, do you have any more questions?",
+          "start": 133560,
+          "end": 135250,
+          "confidence": 0.85349256
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "A",
+          "text": "Absolutely.",
+          "start": 137260,
+          "end": 137980,
+          "confidence": 0.4650449
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "A",
+          "text": "Um, I'm curious.",
+          "start": 138080,
+          "end": 139060,
+          "confidence": 0.8206179
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "A",
+          "text": "Do you have a favorite genre of movies or does your taste vary depending on your mood?",
+          "start": 139060,
+          "end": 144140,
+          "confidence": 0.89830494
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "Usually depends on my mood, but, um, I guess my.",
+          "start": 145740,
+          "end": 149900,
+          "confidence": 0.7855796
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "B",
+          "text": "My favorite genre is drama, um, or a sci Fi because I'm one of my.",
+          "start": 150300,
+          "end": 158620,
+          "confidence": 0.9401412
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "Um.",
+          "start": 159420,
+          "end": 160440,
+          "confidence": 0.607117
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "Yeah, it varies.",
+          "start": 160440,
+          "end": 162220,
+          "confidence": 0.724291
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "B",
+          "text": "But yeah, because my favorite movies are, um.",
+          "start": 162220,
+          "end": 167580,
+          "confidence": 0.8682224
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "Begin Again, Um, Blade Runner, Another Round.",
+          "start": 167580,
+          "end": 173380,
+          "confidence": 0.9042421
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "Um, Cinema Paradiso.",
+          "start": 173780,
+          "end": 176020,
+          "confidence": 0.82889396
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "Um, yeah, those kind of things.",
+          "start": 178460,
+          "end": 180820,
+          "confidence": 0.6137717
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "Usually it's drama, um, or Sci Fi.",
+          "start": 181380,
+          "end": 184500,
+          "confidence": 0.8357538
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "A",
+          "text": "That's a fantastic mix of films.",
+          "start": 188530,
+          "end": 190290,
+          "confidence": 0.96603864
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "A",
+          "text": "I, uh, love that variety.",
+          "start": 190370,
+          "end": 191410,
+          "confidence": 0.9683924
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "A",
+          "text": "Uh, if you ever want to chat more about them or need any recommendations, just let me know.",
+          "start": 191800,
+          "end": 195810,
+          "confidence": 0.8813124
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "I think it's done.",
+          "start": 197570,
+          "end": 198560,
+          "confidence": 0.6244315
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "B",
+          "text": "Uh, for today.",
+          "start": 198560,
+          "end": 199650,
+          "confidence": 0.75138676
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "B",
+          "text": "Thank you.",
+          "start": 199730,
+          "end": 200370,
+          "confidence": 0.85296494
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "A",
+          "text": "You're very welcome.",
+          "start": 202370,
+          "end": 203410,
+          "confidence": 0.9671445
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "A",
+          "text": "I'm glad we got to tet.",
+          "start": 203410,
+          "end": 204890,
+          "confidence": 0.9433724
+        },
+        {
+          "sentiment": "NEUTRAL",
+          "speaker": "A",
+          "text": "If you ever want to talk again or practice more, just let me know.",
+          "start": 204890,
+          "end": 208530,
+          "confidence": 0.7582925
+        },
+        {
+          "sentiment": "POSITIVE",
+          "speaker": "A",
+          "text": "Have a great day.",
+          "start": 208610,
+          "end": 209490,
+          "confidence": 0.9839135
+        }
+      ],
+      "entities": [
+        {
+          "entity_type": "occupation",
+          "text": "director",
+          "start": 14720,
+          "end": 15480
+        },
+        {
+          "entity_type": "medical_process",
+          "text": "Brain implant",
+          "start": 20660,
+          "end": 21760
+        },
+        {
+          "entity_type": "medical_process",
+          "text": "brain implanted",
+          "start": 28370,
+          "end": 29410
+        },
+        {
+          "entity_type": "medical_process",
+          "text": "brain implanted",
+          "start": 117810,
+          "end": 118490
+        },
+        {
+          "entity_type": "medical_process",
+          "text": "brain implanted",
+          "start": 120050,
+          "end": 120930
+        }
+      ],
+      "language_confidence": 0.9722,
+      "detected_language": "en",
+      "disfluencies_detected": true,
+      "audio_duration": 0.212
+    },
+    "model_performance": {
+      "overall_confidence": 0.97006154,
+      "language_detection_confidence": 0.9722,
+      "processing_time": 0.212
+    }
+  }
+}

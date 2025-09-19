@@ -355,13 +355,55 @@ Intonation Score (already calculated): {intonation_score:.1f}
 
 Task:
 - Evaluate the student's performance using the rubric.
-- Score each sub-criterion from 1.0 to 5.0 in 0.1 increments for detailed assessment.
-- IMPORTANT: Adjust scoring based on course level:
-  • Level 1: Be lenient. Basic communication attempts = 3.5-4.0, Clear simple sentences = 4.5-5.0
-  • Level 2: Moderate standards. Simple but accurate = 3.5-4.0, Some complexity = 4.5-5.0
-  • Level 3: Higher standards. Accurate with variety = 3.5-4.0, Natural fluency = 4.5-5.0
-  • Level 4: Strict standards. Near-native fluency = 3.5-4.0, Professional level = 4.5-5.0
-- Consider what is reasonable to expect at each level.
+- Score each sub-criterion from 1.0 to 10.0 in 0.2 increments for detailed assessment.
+- CRITICAL: Apply STRICT level-based scoring. The SAME performance MUST receive DIFFERENT scores:
+
+For Level {course_level} students, use these SPECIFIC scoring guidelines:
+""" + (
+    """
+Level 1 (Beginner - VERY LENIENT):
+  • Any attempt to speak = 6.0-7.0
+  • Basic understandable communication = 7.0-8.0
+  • Clear simple sentences = 8.0-9.0
+  • Perfect simple English = 9.0-10.0
+  • Major grammar errors are acceptable if message is clear
+  • Simple vocabulary is GOOD and should score HIGH
+""" if course_level == 1 else
+    """
+Level 2 (Elementary - LENIENT):
+  • Very basic attempts = 4.0-5.0
+  • Basic communication with errors = 5.0-6.0
+  • Simple but mostly accurate = 6.0-7.0
+  • Some complexity attempted = 7.0-8.0
+  • Good control of basics = 8.0-9.0
+  • Some grammar errors acceptable
+""" if course_level == 2 else
+    """
+Level 3 (Intermediate - MODERATE):
+  • Too simple/basic = 3.0-4.0
+  • Simple accuracy only = 4.0-5.0
+  • Accurate with some variety = 5.0-6.0
+  • Good range and control = 6.0-7.0
+  • Natural fluency emerging = 7.0-8.0
+  • Near-native in familiar topics = 8.0-10.0
+""" if course_level == 3 else
+    """
+Level 4 (Advanced - VERY STRICT):
+  • Basic level only = 2.0-3.0
+  • Elementary/simple = 3.0-4.0
+  • Intermediate level = 4.0-5.0
+  • Some advanced features = 5.0-6.0
+  • Good advanced control = 6.0-7.0
+  • Near-native fluency = 7.0-8.0
+  • Professional/native-like = 8.0-10.0
+  • ANY grammar errors or awkwardness reduces score significantly
+""") + f"""
+
+Example: A student saying "I like McDonald's very much, I usually cook pork"
+- Level 1: Would score 7.5-8.0 (clear basic communication - GOOD for beginner!)
+- Level 2: Would score 5.5-6.0 (basic but understandable)
+- Level 3: Would score 4.0-4.5 (too simple for intermediate)
+- Level 4: Would score 2.5-3.0 (far below advanced expectations)
 
 Output JSON:
 {{
@@ -379,25 +421,17 @@ Output JSON:
             response = client.chat.completions.create(
                 model="gpt-4-turbo-preview",
                 messages=[
-                    {"role": "system", "content": "You are an expert English evaluator. Provide scores in 0.1 increments (e.g., 3.1, 3.2, 3.3) for detailed assessment."},
+                    {"role": "system", "content": "You are an expert English evaluator. Provide scores in 0.2 increments from 1.0-10.0 (e.g., 3.2, 3.4, 3.6) for detailed assessment on a 10-point scale."},
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_object"},
                 temperature=0.3
             )
             return json.loads(response.choices[0].message.content)
-        except:
-            # Fallback scores
-            return {
-                "task_coverage": 3.0,
-                "appropriateness": 3.0,
-                "grammar_control": 3.0,
-                "vocabulary_use": 3.0,
-                "logical_flow": 3.0,
-                "cohesive_devices": 3.0,
-                "vocab_phrases_used": [],
-                "feedback": "Evaluation could not be completed."
-            }
+        except Exception as e:
+            print(f"❌ GPT-4 evaluation error: {e}")
+            # Return None to trigger error handling
+            return None
 
     def advanced_pronunciation_analysis(self, result: Dict, target_speaker: str) -> Dict:
         """Enhanced pronunciation analysis with Universal-1 data"""
@@ -405,9 +439,13 @@ Output JSON:
         words = result.get('words', [])
         utterances = result.get('utterances', [])
 
+        print(f"   📊 Debug - Total words: {len(words)}, Total utterances: {len(utterances)}")
+
         # Filter student words
         student_words = []
         student_utterances = [u for u in utterances if u['speaker'] == target_speaker]
+
+        print(f"   📊 Student utterances found: {len(student_utterances)}")
 
         for utterance in student_utterances:
             start_time = utterance['start']
@@ -416,15 +454,21 @@ Output JSON:
             # Find words in this utterance timeframe
             utterance_words = [
                 w for w in words
-                if start_time <= w['start'] <= end_time
+                if start_time <= w.get('start', 0) <= end_time
             ]
             student_words.extend(utterance_words)
 
+        print(f"   📊 Student words found: {len(student_words)}")
+
         if not student_words:
+            print(f"   ⚠️ Warning: No student words with timing data found for speaker {target_speaker}")
+            print(f"   ⚠️ Student utterances: {len(student_utterances)}, but no word-level timing data")
             return {
                 "pronunciation_score": 3.0,
-                "detailed_analysis": "No student words detected",
-                "total_words": 0
+                "detailed_analysis": "No student words detected - possibly due to poor pronunciation or audio quality",
+                "total_words": 0,
+                "average_confidence": 0.5,
+                "clarity_ratio": 0.5
             }
 
         # Advanced confidence analysis
@@ -511,6 +555,7 @@ Output JSON:
                     student_text += utterance['text'] + " "
 
             # Step 6: Advanced pronunciation analysis
+            print(f"\n📊 Pronunciation Analysis:")
             pronunciation_analysis = self.advanced_pronunciation_analysis(result, student_speaker)
 
             # Step 7: LeMUR AI analysis (optional)
@@ -537,35 +582,34 @@ Output JSON:
             }
 
             # Step 9: Create evaluation using rubric format with pronunciation metrics
+            print(f"\n📊 Creating evaluation scores...")
+            print(f"   Student text length: {len(student_text.split())} words")
+
             # Use pronunciation analysis for Delivery scores
             # Map 60%-100% to 1.0-5.0 (60% = 1.0, 80% = 3.0, 100% = 5.0)
-            clarity = pronunciation_analysis['clarity_ratio']
-            confidence = pronunciation_analysis['average_confidence']
+            clarity = pronunciation_analysis.get('clarity_ratio', 0.5)
+            confidence = pronunciation_analysis.get('average_confidence', 0.5)
 
-            # Apply level-based adjustment
-            # Level 1-2: More lenient (bonus up to +1.0)
-            # Level 3-4: More strict (penalty up to -0.5)
+            print(f"   📊 Clarity: {clarity:.1%}, Confidence: {confidence:.1%}")
+
+            # No level-based adjustment for pronunciation scores
+            # All levels use the same objective pronunciation scoring
             level_adjustment = 0
-            if course_level <= 2:
-                # For beginners, boost scores based on effort
-                # 60% clarity for Level 1 is good effort = +0.5 to +1.0 bonus
-                level_adjustment = (3 - course_level) * 0.5  # Level 1: +1.0, Level 2: +0.5
-            else:
-                # For advanced, apply stricter standards
-                # 80% clarity for Level 4 is just average = -0.3 to -0.5 penalty
-                level_adjustment = (3 - course_level) * 0.25  # Level 3: 0, Level 4: -0.25
 
-            # Base formula: (metric - 0.6) * 10 + 1, clamped to 1.0-5.0
-            # 60% → 1.0, 70% → 2.0, 80% → 3.0, 90% → 4.0, 100% → 5.0
-            base_pronunciation = (clarity - 0.6) * 10 + 1
-            base_intonation = (confidence - 0.6) * 10 + 1
+            # Base formula for 10-point scale: (metric - 0.5) * 20, clamped to 1.0-10.0
+            # 50% → 1.0, 60% → 3.0, 70% → 5.0, 80% → 7.0, 90% → 9.0, 100% → 10.0
+            base_pronunciation = (clarity - 0.5) * 20
+            base_intonation = (confidence - 0.5) * 20
 
-            # Apply level adjustment
-            pronunciation_score = max(1.0, min(5.0, base_pronunciation + level_adjustment))
-            intonation_score = max(1.0, min(5.0, base_intonation + level_adjustment))
+            # Apply level adjustment (no adjustment currently)
+            pronunciation_score = max(1.0, min(10.0, base_pronunciation + level_adjustment))
+            intonation_score = max(1.0, min(10.0, base_intonation + level_adjustment))
 
             # Generate GPT-4 evaluation if LeMUR not available
+            print(f"\n📊 Generating GPT-4 evaluation...")
+
             if not lemur_analysis or 'task_coverage' not in lemur_analysis:
+                print(f"   Using GPT-4 for evaluation (LeMUR not available or disabled)")
                 gpt_evaluation = self.generate_rubric_evaluation(
                     student_text.strip(),
                     result.get('text', ''),
@@ -575,7 +619,15 @@ Output JSON:
                     intonation_score
                 )
             else:
+                print(f"   Using LeMUR evaluation results")
                 gpt_evaluation = lemur_analysis
+
+            # Ensure gpt_evaluation is not None
+            if not gpt_evaluation:
+                print(f"   ❌ GPT evaluation is None")
+                print(f"   ❌ Student text preview: {student_text[:100]}...")
+                print(f"   ❌ Full transcript length: {len(result.get('text', ''))}")
+                raise Exception("GPT-4 evaluation failed: No evaluation data returned. This may be due to insufficient student speech content or API issues.")
 
             # Compile final results in rubric format
             return {
@@ -687,28 +739,23 @@ def main():
         print("-"*50)
 
         print("\n1. CONTENT RELEVANCE:")
-        print(f"   • Task Coverage:      {results['task_coverage']:.1f}/5.0")
-        print(f"   • Appropriateness:    {results['appropriateness']:.1f}/5.0")
+        print(f"   • Task Coverage:      {results['task_coverage']:.1f}/10.0")
+        print(f"   • Appropriateness:    {results['appropriateness']:.1f}/10.0")
 
         print("\n2. ACCURACY:")
-        print(f"   • Grammar Control:    {results['grammar_control']:.1f}/5.0")
-        print(f"   • Vocabulary Use:     {results['vocabulary_use']:.1f}/5.0")
+        print(f"   • Grammar Control:    {results['grammar_control']:.1f}/10.0")
+        print(f"   • Vocabulary Use:     {results['vocabulary_use']:.1f}/10.0")
 
         print("\n3. COHERENCE:")
-        print(f"   • Logical Flow:       {results['logical_flow']:.1f}/5.0")
-        print(f"   • Cohesive Devices:   {results['cohesive_devices']:.1f}/5.0")
+        print(f"   • Logical Flow:       {results['logical_flow']:.1f}/10.0")
+        print(f"   • Cohesive Devices:   {results['cohesive_devices']:.1f}/10.0")
 
         print("\n4. DELIVERY:")
-        level_note = ""
-        if results['course_level'] <= 2:
-            level_note = f" [+Level {results['course_level']} bonus]"
-        elif results['course_level'] == 4:
-            level_note = " [Level 4 strict]"
-        print(f"   • Pronunciation:      {results['pronunciation']:.1f}/5.0 (Clarity: {results['detailed_analysis']['pronunciation_details']['clarity_ratio']:.0%}){level_note}")
-        print(f"   • Intonation/Stress:  {results['intonation_stress']:.1f}/5.0 (Confidence: {results['detailed_analysis']['pronunciation_details']['average_confidence']:.0%}){level_note}")
+        print(f"   • Pronunciation:      {results['pronunciation']:.1f}/10.0 (Clarity: {results['detailed_analysis']['pronunciation_details']['clarity_ratio']:.0%})")
+        print(f"   • Intonation/Stress:  {results['intonation_stress']:.1f}/10.0 (Confidence: {results['detailed_analysis']['pronunciation_details']['average_confidence']:.0%})")
 
         print("\n" + "-"*50)
-        print(f"📈 AVERAGE SCORE: {results['average_score']:.1f}/5.0")
+        print(f"📈 AVERAGE SCORE: {results['average_score']:.1f}/10.0")
         print("-"*50)
 
         # Vocabulary
