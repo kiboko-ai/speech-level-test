@@ -249,14 +249,25 @@ class EvaluationDatabase:
 
             stats = cursor.fetchone()
 
+            # Handle empty results properly
+            if stats and stats[0] and stats[0] > 0:
+                statistics = {
+                    'total_evaluations': stats[0],
+                    'overall_average': round(stats[1], 1) if stats[1] else 0,
+                    'highest_score': round(stats[2], 1) if stats[2] else 0,
+                    'lowest_score': round(stats[3], 1) if stats[3] else 0
+                }
+            else:
+                statistics = {
+                    'total_evaluations': 0,
+                    'overall_average': 0,
+                    'highest_score': 0,
+                    'lowest_score': 0
+                }
+
             return {
                 'evaluations': evaluations,
-                'statistics': {
-                    'total_evaluations': stats[0] if stats else 0,
-                    'overall_average': round(stats[1], 1) if stats and stats[1] else 0,
-                    'highest_score': round(stats[2], 1) if stats and stats[2] else 0,
-                    'lowest_score': round(stats[3], 1) if stats and stats[3] else 0
-                }
+                'statistics': statistics
             }
         except Exception as e:
             print(f"Error getting progress summary: {e}")
