@@ -5,10 +5,19 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import tempfile
 from speech_test_ass_advanced import AssemblyAIAdvancedEvaluator
+from database import EvaluationDatabase
+from pydub import AudioSegment
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size
 app.config['UPLOAD_FOLDER'] = tempfile.gettempdir()
+
+# Initialize database
+db = EvaluationDatabase()
 
 # Allowed audio extensions
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'mp4', 'm4a', 'aac', 'ogg', 'flac'}
@@ -16,10 +25,54 @@ ALLOWED_EXTENSIONS = {'mp3', 'wav', 'mp4', 'm4a', 'aac', 'ogg', 'flac'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def convert_to_mp3(input_path, output_path):
+    """Convert audio file to MP3 format using pydub"""
+    try:
+        logging.info(f"Converting {input_path} to MP3...")
+        audio = AudioSegment.from_file(input_path)
+        audio.export(output_path, format="mp3", bitrate="192k")
+        logging.info(f"Successfully converted to {output_path}")
+        return True
+    except Exception as e:
+        logging.error(f"Error converting audio: {e}")
+        return False
+
 @app.route('/')
 def index():
-    """Render the main evaluation page"""
-    return render_template('index.html')
+    """Render the main dashboard page"""
+    return render_template('dashboard.html')
+
+@app.route('/check_student', methods=['POST'])
+def check_student():
+    """Check if student exists and get their progress"""
+    data = request.get_json()
+    student_id = data.get('student_id')
+
+    if not student_id:
+        return jsonify({'error': 'Student ID required'}), 400
+
+    # Get student progress summary
+    progress = db.get_student_progress_summary(student_id)
+
+    return jsonify({
+        'success': True,
+        'student_id': student_id,
+        'exists': len(progress['evaluations']) > 0,
+        'progress': progress
+    })
+
+@app.route('/evaluation/<student_id>/<course_order>')
+def evaluation_detail(student_id, course_order):
+    """Show detailed evaluation for a specific course"""
+    evaluation = db.get_evaluation_by_course(student_id, course_order)
+
+    if not evaluation:
+        return "Evaluation not found", 404
+
+    return render_template('evaluation_detail.html',
+                         student_id=student_id,
+                         course_order=course_order,
+                         evaluation=evaluation)
 
 @app.route('/evaluate', methods=['POST'])
 def evaluate():
@@ -45,9 +98,31 @@ def evaluate():
         # Save uploaded file
         filename = secure_filename(file.filename)
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"{student_id}_{course_order}_{timestamp}_{filename}"
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
+        original_ext = filename.rsplit('.', 1)[1].lower()
+
+        # Save the uploaded file
+        temp_filename = f"{student_id}_{course_order}_{timestamp}_{filename}"
+        temp_filepath = os.path.join(app.config['UPLOAD_FOLDER'], temp_filename)
+        file.save(temp_filepath)
+
+        # Check if conversion is needed
+        filepath = temp_filepath
+        if original_ext == 'm4a':
+            # Convert m4a to mp3
+            mp3_filename = temp_filename.rsplit('.', 1)[0] + '.mp3'
+            mp3_filepath = os.path.join(app.config['UPLOAD_FOLDER'], mp3_filename)
+
+            logging.info(f"Converting m4a file to mp3: {temp_filename} -> {mp3_filename}")
+
+            if convert_to_mp3(temp_filepath, mp3_filepath):
+                # Use the converted mp3 file
+                filepath = mp3_filepath
+                # Remove the original m4a file
+                os.remove(temp_filepath)
+                logging.info("Successfully converted m4a to mp3")
+            else:
+                # If conversion fails, try to use the original file anyway
+                logging.warning("Failed to convert m4a to mp3, attempting with original file")
 
         try:
             # Initialize evaluator
@@ -91,7 +166,11 @@ def evaluate():
                 'confidence': results.get('detailed_analysis', {}).get('pronunciation_details', {}).get('average_confidence', 0.5)
             }
 
-            # Save results to JSON file
+            # Save to database (use the actual filename that was processed)
+            response_data['audio_filename'] = os.path.basename(filepath)
+            db.save_evaluation(response_data)
+
+            # Also save to JSON file for backup
             result_filename = f"{student_id}_{course_order}_{timestamp}_results.json"
             result_path = os.path.join(app.config['UPLOAD_FOLDER'], result_filename)
             with open(result_path, 'w', encoding='utf-8') as f:

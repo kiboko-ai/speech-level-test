@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Speech Evaluation Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        /* Student Search Section */
+        .search-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+
+        .search-card.collapsed {
+            padding: 20px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            padding: 12px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            min-width: 300px;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f0f3ff;
+            color: #667eea;
+        }
+
+        /* Dashboard Section */
+        .dashboard-section {
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .dashboard-section.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Student Info Card */
+        .student-info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .student-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .student-title {
+            font-size: 1.8rem;
+            color: #333;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Progress Chart Card */
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 1.4rem;
+            color: #333;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+        }
+
+        /* Add Evaluation Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 30px;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .file-upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #f8f9fa;
+        }
+
+        .file-upload-area:hover,
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+
+        .file-upload-area.has-file {
+            border-color: #48bb78;
+            background: #f0fdf4;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        /* Loading Spinner */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        /* Message Alert */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-info {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .empty-text {
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .search-input {
+                min-width: 200px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Student Evaluation Dashboard</h1>
+        </div>
+
+        <!-- Student Search Section -->
+        <div class="search-card" id="searchCard">
+            <form id="searchForm" class="search-form">
+                <input type="text"
+                       id="studentIdInput"
+                       class="search-input"
+                       placeholder="Enter Student ID"
+                       required>
+                <button type="submit" class="btn btn-primary">
+                    🔍 Check Student
+                </button>
+            </form>
+
+            <div class="alert alert-info" id="infoAlert">
+                Enter a student ID to view their evaluation history and progress.
+            </div>
+
+            <div class="alert alert-error" id="errorAlert"></div>
+        </div>
+
+        <!-- Dashboard Section (Hidden initially) -->
+        <div class="dashboard-section" id="dashboardSection">
+            <!-- Student Info Card -->
+            <div class="student-info-card">
+                <div class="student-header">
+                    <h2 class="student-title">
+                        Student ID: <span id="displayStudentId"></span>
+                    </h2>
+                    <button class="btn btn-success" onclick="showAddEvaluationModal()">
+                        ➕ Add Course Evaluation
+                    </button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Total Evaluations</div>
+                        <div class="stat-value" id="totalEvaluations">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Overall Average</div>
+                        <div class="stat-value" id="overallAverage">0.0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Highest Score</div>
+                        <div class="stat-value" id="highestScore">0.0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Lowest Score</div>
+                        <div class="stat-value" id="lowestScore">0.0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">📈 Course Progress Overview</h3>
+                    <button class="btn btn-secondary" onclick="resetSearch()">
+                        🔄 New Search
+                    </button>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="progressChart"></canvas>
+                </div>
+
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-icon">📚</div>
+                    <h3 class="empty-title">No Evaluations Yet</h3>
+                    <p class="empty-text">Click "Add Course Evaluation" to add the first evaluation for this student.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Evaluation Modal -->
+    <div class="modal" id="addEvaluationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Course Evaluation</h2>
+                <p style="color: #666;">Student ID: <strong id="modalStudentId"></strong></p>
+            </div>
+
+            <form id="evaluationForm">
+                <div class="form-group">
+                    <label for="courseOrder">Course Order *</label>
+                    <input type="text"
+                           id="courseOrder"
+                           name="course_order"
+                           placeholder="e.g., Week 1, Lesson 3, or 1-3"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="courseLevel">Course Level *</label>
+                    <select id="courseLevel" name="course_level" required>
+                        <option value="1">Level 1 - Beginner</option>
+                        <option value="2" selected>Level 2 - Elementary</option>
+                        <option value="3">Level 3 - Intermediate</option>
+                        <option value="4">Level 4 - Advanced</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Audio File *</label>
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">📁</div>
+                        <p><strong>Click to upload or drag and drop</strong></p>
+                        <p style="margin-top: 10px; color: #666; font-size: 0.9rem;">
+                            Supported: MP3, WAV, M4A, MP4, AAC, OGG, FLAC (Max: 100MB)
+                        </p>
+                        <input type="file"
+                               id="audioFile"
+                               name="audio_file"
+                               accept="audio/*,.mp4,.m4a"
+                               style="display: none;"
+                               required>
+
+                        <div id="fileInfo" style="display: none; margin-top: 15px;">
+                            <strong>Selected:</strong> <span id="fileName"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        🚀 Evaluate
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div style="text-align: center;">
+            <div class="spinner"></div>
+            <div class="loading-text">Processing evaluation...</div>
+            <div style="margin-top: 10px; color: #666;">This may take 30-60 seconds</div>
+        </div>
+    </div>
+
+    <script>
+        let currentStudentId = null;
+        let progressChart = null;
+        let evaluationsData = [];
+
+        // Search form submission
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const studentId = document.getElementById('studentIdInput').value.trim();
+            if (!studentId) return;
+
+            try {
+                const response = await fetch('/check_student', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ student_id: studentId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentStudentId = studentId;
+                    displayStudentDashboard(data);
+                } else {
+                    showError(data.error || 'Failed to check student');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            }
+        });
+
+        function displayStudentDashboard(data) {
+            // Hide alerts
+            document.getElementById('infoAlert').classList.remove('show');
+            document.getElementById('errorAlert').classList.remove('show');
+
+            // Collapse search card
+            document.getElementById('searchCard').classList.add('collapsed');
+
+            // Update student info
+            document.getElementById('displayStudentId').textContent = data.student_id;
+            document.getElementById('modalStudentId').textContent = data.student_id;
+
+            // Update statistics
+            const stats = data.progress.statistics;
+            document.getElementById('totalEvaluations').textContent = stats.total_evaluations || 0;
+            document.getElementById('overallAverage').textContent = (stats.overall_average || 0).toFixed(1);
+            document.getElementById('highestScore').textContent = (stats.highest_score || 0).toFixed(1);
+            document.getElementById('lowestScore').textContent = (stats.lowest_score || 0).toFixed(1);
+
+            // Store evaluations data
+            evaluationsData = data.progress.evaluations || [];
+
+            // Show dashboard
+            document.getElementById('dashboardSection').classList.add('show');
+
+            // Create or update chart
+            if (evaluationsData.length > 0) {
+                document.getElementById('emptyState').style.display = 'none';
+                document.querySelector('.chart-container').style.display = 'block';
+                createProgressChart(evaluationsData);
+            } else {
+                document.getElementById('emptyState').style.display = 'block';
+                document.querySelector('.chart-container').style.display = 'none';
+            }
+        }
+
+        function createProgressChart(evaluations) {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+
+            if (progressChart) {
+                progressChart.destroy();
+            }
+
+            // Prepare data for up to 24 courses
+            const maxCourses = 24;
+            const labels = [];
+            const scores = [];
+            const backgroundColors = [];
+            const borderColors = [];
+
+            // Create labels and scores for existing evaluations
+            evaluations.forEach((eval, index) => {
+                labels.push(eval.course_order);
+                scores.push(eval.average_score);
+
+                // Color based on score
+                const hue = (eval.average_score / 10) * 120; // 0=red, 120=green
+                backgroundColors.push(`hsla(${hue}, 70%, 50%, 0.8)`);
+                borderColors.push(`hsla(${hue}, 70%, 40%, 1)`);
+            });
+
+            progressChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Overall Performance',
+                        data: scores,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 2,
+                        borderRadius: 5,
+                        maxBarThickness: 60
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const evaluation = evaluationsData[index];
+                            // Navigate to detailed view
+                            window.location.href = `/evaluation/${currentStudentId}/${evaluation.course_order}`;
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return 'Course: ' + context[0].label;
+                                },
+                                label: function(context) {
+                                    return 'Score: ' + context.parsed.y.toFixed(1) + '/10';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: {
+                                stepSize: 2
+                            },
+                            title: {
+                                display: true,
+                                text: 'Overall Score'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Course Order'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    onHover: (event, elements) => {
+                        ctx.canvas.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                    }
+                }
+            });
+        }
+
+        // Modal functions
+        function showAddEvaluationModal() {
+            document.getElementById('addEvaluationModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('addEvaluationModal').classList.remove('show');
+            document.getElementById('evaluationForm').reset();
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('fileUploadArea').classList.remove('has-file');
+        }
+
+        // File upload handling
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileInput = document.getElementById('audioFile');
+
+        fileUploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.classList.remove('dragover');
+        });
+
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                displayFileInfo(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                displayFileInfo(e.target.files[0]);
+            }
+        });
+
+        function displayFileInfo(file) {
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileInfo').style.display = 'block';
+            fileUploadArea.classList.add('has-file');
+        }
+
+        // Evaluation form submission
+        document.getElementById('evaluationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('student_id', currentStudentId);
+            formData.append('course_order', document.getElementById('courseOrder').value);
+            formData.append('course_level', document.getElementById('courseLevel').value);
+            formData.append('audio_file', fileInput.files[0]);
+
+            // Show loading
+            document.getElementById('loadingOverlay').classList.add('show');
+            closeModal();
+
+            try {
+                const response = await fetch('/evaluate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Refresh the dashboard
+                    await refreshDashboard();
+                    showSuccess('Evaluation completed successfully!');
+                } else {
+                    showError(data.error || 'Evaluation failed');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                document.getElementById('loadingOverlay').classList.remove('show');
+            }
+        });
+
+        async function refreshDashboard() {
+            if (!currentStudentId) return;
+
+            try {
+                const response = await fetch('/check_student', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ student_id: currentStudentId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayStudentDashboard(data);
+                }
+            } catch (error) {
+                console.error('Failed to refresh dashboard:', error);
+            }
+        }
+
+        function resetSearch() {
+            currentStudentId = null;
+            document.getElementById('searchForm').reset();
+            document.getElementById('searchCard').classList.remove('collapsed');
+            document.getElementById('dashboardSection').classList.remove('show');
+            document.getElementById('infoAlert').classList.add('show');
+        }
+
+        function showError(message) {
+            const alert = document.getElementById('errorAlert');
+            alert.textContent = '⚠️ ' + message;
+            alert.classList.add('show');
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+
+        function showSuccess(message) {
+            // Create success alert if not exists
+            let successAlert = document.querySelector('.alert-success');
+            if (!successAlert) {
+                successAlert = document.createElement('div');
+                successAlert.className = 'alert alert-success';
+                document.querySelector('.dashboard-section').insertBefore(
+                    successAlert,
+                    document.querySelector('.student-info-card')
+                );
+            }
+            successAlert.textContent = '✅ ' + message;
+            successAlert.classList.add('show');
+            setTimeout(() => successAlert.classList.remove('show'), 5000);
+        }
+
+        // Show info alert on load
+        document.getElementById('infoAlert').classList.add('show');
+    </script>
+</body>
+</html>
