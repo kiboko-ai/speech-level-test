@@ -433,6 +433,63 @@ Output JSON:
             # Return None to trigger error handling
             return None
 
+    def compare_with_previous(self, current_eval: Dict, previous_eval: Dict, course_level: int) -> Dict:
+        """Compare current evaluation with previous lesson to track progress"""
+
+        from openai import OpenAI
+        client = OpenAI()
+
+        prompt = f"""You are an English speaking test evaluator comparing two lessons.
+
+Input:
+1) Current lesson evaluation: {json.dumps(current_eval)}
+2) Previous lesson evaluation: {json.dumps(previous_eval)}
+3) Course level: {course_level}
+
+Task:
+- Compare the current lesson with the previous lesson.
+- Score the **change** (improvement or decline) in each sub-criterion.
+- Use -2.0 to +2.0 scale where 0 = no change, positive = improvement, negative = decline.
+- Course level sensitivity:
+  • Levels 1–2: value clearer communication, more vocab, longer answers.
+  • Levels 3–4: value better accuracy, complex structures, fluency, naturalness.
+
+Also:
+- Extract **new important vocabulary/phrases** that appeared in this lesson but not in the previous lesson.
+- Highlight 1–2 key progress points and 1–2 areas still needing improvement.
+
+Output JSON format:
+{{
+  "course_level": {course_level},
+  "change_task_coverage": <change_score>,
+  "change_appropriateness": <change_score>,
+  "change_grammar_control": <change_score>,
+  "change_vocabulary_use": <change_score>,
+  "change_logical_flow": <change_score>,
+  "change_cohesive_devices": <change_score>,
+  "change_pronunciation": <change_score>,
+  "change_intonation_stress": <change_score>,
+  "average_change": <average>,
+  "new_vocab_phrases": ["<word_or_phrase_1>", "<word_or_phrase_2>", ...],
+  "progress_summary": "<short_text_summary>",
+  "remaining_issues": "<short_text_summary>"
+}}"""
+
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4-turbo-preview",
+                messages=[
+                    {"role": "system", "content": "You are an expert English evaluator tracking student progress."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.3
+            )
+            return json.loads(response.choices[0].message.content)
+        except Exception as e:
+            print(f"❌ Progress comparison error: {e}")
+            return None
+
     def advanced_pronunciation_analysis(self, result: Dict, target_speaker: str) -> Dict:
         """Enhanced pronunciation analysis with Universal-1 data"""
 

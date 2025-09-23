@@ -19,6 +19,25 @@ export interface StudentProgress {
   };
 }
 
+export interface ProgressComparison {
+  change_scores: {
+    task_coverage: number;
+    appropriateness: number;
+    grammar_control: number;
+    vocabulary_use: number;
+    logical_flow: number;
+    cohesive_devices: number;
+    pronunciation: number;
+    intonation_stress: number;
+  };
+  average_change: number;
+  new_vocab_phrases: string[];
+  progress_summary: string;
+  remaining_issues: string;
+  previous_course: string;
+  previous_date: string;
+}
+
 export interface Evaluation {
   id?: number;
   student_id: string;
@@ -41,6 +60,7 @@ export interface Evaluation {
   word_count: number;
   clarity_ratio: number;
   confidence: number;
+  progress_comparison?: ProgressComparison;
 }
 
 export const checkStudent = async (studentId: string) => {

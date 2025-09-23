@@ -57,8 +57,10 @@ class EvaluationDatabase:
                 -- Audio file info
                 audio_filename TEXT,
 
-                FOREIGN KEY (student_id) REFERENCES students(student_id),
-                UNIQUE(student_id, course_order)  -- Prevent duplicate evaluations for same course
+                -- Progress tracking (JSON)
+                progress_comparison TEXT,
+
+                FOREIGN KEY (student_id) REFERENCES students(student_id)
             )
         ''')
 
@@ -102,15 +104,18 @@ class EvaluationDatabase:
             # Convert vocab phrases list to JSON string
             vocab_json = json.dumps(evaluation_data.get('vocab_phrases', []))
 
+            # Convert progress comparison to JSON string
+            progress_json = json.dumps(evaluation_data.get('progress_comparison', {})) if 'progress_comparison' in evaluation_data else None
+
             cursor.execute('''
-                INSERT OR REPLACE INTO evaluations (
+                INSERT INTO evaluations (
                     student_id, course_order, course_level,
                     task_coverage, appropriateness, grammar_control, vocabulary_use,
                     logical_flow, cohesive_devices, pronunciation, intonation_stress,
                     average_score, feedback, vocab_phrases, student_speaker,
                     student_text, word_count, clarity_ratio, confidence,
-                    audio_filename, evaluation_date
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                    audio_filename, progress_comparison, evaluation_date
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
             ''', (
                 evaluation_data['student_id'],
                 evaluation_data['course_order'],
@@ -131,7 +136,8 @@ class EvaluationDatabase:
                 evaluation_data.get('word_count', 0),
                 evaluation_data.get('clarity_ratio', 0),
                 evaluation_data.get('confidence', 0),
-                evaluation_data.get('audio_filename', '')
+                evaluation_data.get('audio_filename', ''),
+                progress_json
             ))
 
             conn.commit()
@@ -162,6 +168,8 @@ class EvaluationDatabase:
                 eval_dict = dict(row)
                 # Parse JSON fields
                 eval_dict['vocab_phrases'] = json.loads(eval_dict.get('vocab_phrases', '[]'))
+                if eval_dict.get('progress_comparison'):
+                    eval_dict['progress_comparison'] = json.loads(eval_dict['progress_comparison'])
                 evaluations.append(eval_dict)
 
             return evaluations
@@ -187,6 +195,8 @@ class EvaluationDatabase:
             if row:
                 eval_dict = dict(row)
                 eval_dict['vocab_phrases'] = json.loads(eval_dict.get('vocab_phrases', '[]'))
+                if eval_dict.get('progress_comparison'):
+                    eval_dict['progress_comparison'] = json.loads(eval_dict['progress_comparison'])
                 return eval_dict
             return None
         except Exception as e:

@@ -5,7 +5,8 @@ import {
   LinearProgress, Button, Chip, Divider, IconButton
 } from '@mui/material';
 import {
-  ArrowBack, Print, Mic, Speed, Group, Psychology
+  ArrowBack, Print, Mic, Speed, Group, Psychology,
+  TrendingUp, TrendingDown, Remove
 } from '@mui/icons-material';
 import {
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -256,6 +257,112 @@ const EvaluationDetail: React.FC = () => {
         <Paper sx={{ p: 3, mb: 4, bgcolor: 'primary.50' }}>
           <Typography variant="h6" sx={{ mb: 2 }}>Feedback</Typography>
           <Typography>{evaluation.feedback}</Typography>
+        </Paper>
+      )}
+
+      {/* Progress Comparison */}
+      {evaluation.progress_comparison && (
+        <Paper sx={{ p: 3, mb: 4, bgcolor: 'background.paper', border: '2px solid', borderColor: 'primary.main' }}>
+          <Typography variant="h6" sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+            📊 Progress Comparison with Previous Lesson
+            <Chip
+              label={`vs ${evaluation.progress_comparison.previous_course}`}
+              sx={{ ml: 2 }}
+              size="small"
+              color="primary"
+            />
+          </Typography>
+
+          {/* Overall Change Indicator */}
+          <Box sx={{ mb: 3, p: 2, bgcolor: evaluation.progress_comparison.average_change > 0 ? 'success.50' : evaluation.progress_comparison.average_change < 0 ? 'error.50' : 'grey.100', borderRadius: 2 }}>
+            <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {evaluation.progress_comparison.average_change > 0 ? (
+                <>
+                  <TrendingUp sx={{ mr: 1, color: 'success.main' }} />
+                  <span style={{ color: 'green' }}>+{evaluation.progress_comparison.average_change.toFixed(2)} Improvement</span>
+                </>
+              ) : evaluation.progress_comparison.average_change < 0 ? (
+                <>
+                  <TrendingDown sx={{ mr: 1, color: 'error.main' }} />
+                  <span style={{ color: 'red' }}>{evaluation.progress_comparison.average_change.toFixed(2)} Decline</span>
+                </>
+              ) : (
+                <>
+                  <Remove sx={{ mr: 1 }} />
+                  <span>No Change</span>
+                </>
+              )}
+            </Typography>
+          </Box>
+
+          {/* Change Scores Grid */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2, mb: 3 }}>
+            {[
+              { label: 'Task Coverage', value: evaluation.progress_comparison.change_scores.task_coverage },
+              { label: 'Appropriateness', value: evaluation.progress_comparison.change_scores.appropriateness },
+              { label: 'Grammar Control', value: evaluation.progress_comparison.change_scores.grammar_control },
+              { label: 'Vocabulary Use', value: evaluation.progress_comparison.change_scores.vocabulary_use },
+              { label: 'Logical Flow', value: evaluation.progress_comparison.change_scores.logical_flow },
+              { label: 'Cohesive Devices', value: evaluation.progress_comparison.change_scores.cohesive_devices },
+              { label: 'Pronunciation', value: evaluation.progress_comparison.change_scores.pronunciation },
+              { label: 'Intonation & Stress', value: evaluation.progress_comparison.change_scores.intonation_stress }
+            ].map((item) => (
+              <Box key={item.label} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="body2">{item.label}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  {item.value > 0 ? (
+                    <TrendingUp sx={{ mr: 0.5, color: 'success.main', fontSize: 20 }} />
+                  ) : item.value < 0 ? (
+                    <TrendingDown sx={{ mr: 0.5, color: 'error.main', fontSize: 20 }} />
+                  ) : (
+                    <Remove sx={{ mr: 0.5, color: 'grey.500', fontSize: 20 }} />
+                  )}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 600,
+                      color: item.value > 0 ? 'success.main' : item.value < 0 ? 'error.main' : 'text.secondary'
+                    }}
+                  >
+                    {item.value > 0 ? '+' : ''}{item.value.toFixed(1)}
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+
+          {/* Progress Summary */}
+          {evaluation.progress_comparison.progress_summary && (
+            <Box sx={{ mb: 2, p: 2, bgcolor: 'success.50', borderRadius: 1 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>✅ Progress Summary</Typography>
+              <Typography variant="body2">{evaluation.progress_comparison.progress_summary}</Typography>
+            </Box>
+          )}
+
+          {/* Remaining Issues */}
+          {evaluation.progress_comparison.remaining_issues && (
+            <Box sx={{ mb: 2, p: 2, bgcolor: 'warning.50', borderRadius: 1 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>⚠️ Areas for Improvement</Typography>
+              <Typography variant="body2">{evaluation.progress_comparison.remaining_issues}</Typography>
+            </Box>
+          )}
+
+          {/* New Vocabulary */}
+          {evaluation.progress_comparison.new_vocab_phrases && evaluation.progress_comparison.new_vocab_phrases.length > 0 && (
+            <Box sx={{ p: 2, bgcolor: 'info.50', borderRadius: 1 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>🆕 New Vocabulary This Lesson</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {evaluation.progress_comparison.new_vocab_phrases.map((phrase, index) => (
+                  <Chip
+                    key={index}
+                    label={phrase}
+                    size="small"
+                    sx={{ bgcolor: 'white' }}
+                  />
+                ))}
+              </Box>
+            </Box>
+          )}
         </Paper>
       )}
 

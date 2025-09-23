@@ -163,6 +163,56 @@ def evaluate():
             results['student_id'] = student_id
             results['course_order'] = course_order
 
+            # Get the most recent previous evaluation for comparison
+            previous_evaluations = db.get_student_evaluations(student_id)
+            previous_eval = None
+            comparison_results = None
+
+            if previous_evaluations and len(previous_evaluations) > 0:
+                # Sort by date and get the most recent one
+                sorted_evals = sorted(previous_evaluations,
+                                    key=lambda x: x.get('evaluation_date', ''),
+                                    reverse=True)
+                previous_eval = sorted_evals[0]
+
+                # Perform comparison if previous evaluation exists
+                logging.info(f"Found previous evaluation from {previous_eval.get('evaluation_date')}")
+
+                # Create comparison data
+                current_eval_data = {
+                    'task_coverage': results.get('task_coverage', 5.0),
+                    'appropriateness': results.get('appropriateness', 5.0),
+                    'grammar_control': results.get('grammar_control', 5.0),
+                    'vocabulary_use': results.get('vocabulary_use', 5.0),
+                    'logical_flow': results.get('logical_flow', 5.0),
+                    'cohesive_devices': results.get('cohesive_devices', 5.0),
+                    'pronunciation': results.get('pronunciation', 5.0),
+                    'intonation_stress': results.get('intonation_stress', 5.0),
+                    'vocab_phrases': results.get('vocab_phrases_used', [])
+                }
+
+                previous_eval_data = {
+                    'task_coverage': previous_eval.get('task_coverage', 5.0),
+                    'appropriateness': previous_eval.get('appropriateness', 5.0),
+                    'grammar_control': previous_eval.get('grammar_control', 5.0),
+                    'vocabulary_use': previous_eval.get('vocabulary_use', 5.0),
+                    'logical_flow': previous_eval.get('logical_flow', 5.0),
+                    'cohesive_devices': previous_eval.get('cohesive_devices', 5.0),
+                    'pronunciation': previous_eval.get('pronunciation', 5.0),
+                    'intonation_stress': previous_eval.get('intonation_stress', 5.0),
+                    'vocab_phrases': previous_eval.get('vocab_phrases', [])
+                }
+
+                # Use the evaluator to compare
+                comparison_results = evaluator.compare_with_previous(
+                    current_eval_data,
+                    previous_eval_data,
+                    course_level
+                )
+
+                if comparison_results:
+                    logging.info(f"Progress comparison completed. Average change: {comparison_results.get('average_change', 0):.2f}")
+
             # Prepare response data
             response_data = {
                 'success': True,
@@ -188,6 +238,27 @@ def evaluate():
                 'clarity_ratio': results.get('detailed_analysis', {}).get('pronunciation_details', {}).get('clarity_ratio', 0.5),
                 'confidence': results.get('detailed_analysis', {}).get('pronunciation_details', {}).get('average_confidence', 0.5)
             }
+
+            # Add comparison results if available
+            if comparison_results:
+                response_data['progress_comparison'] = {
+                    'change_scores': {
+                        'task_coverage': comparison_results.get('change_task_coverage', 0),
+                        'appropriateness': comparison_results.get('change_appropriateness', 0),
+                        'grammar_control': comparison_results.get('change_grammar_control', 0),
+                        'vocabulary_use': comparison_results.get('change_vocabulary_use', 0),
+                        'logical_flow': comparison_results.get('change_logical_flow', 0),
+                        'cohesive_devices': comparison_results.get('change_cohesive_devices', 0),
+                        'pronunciation': comparison_results.get('change_pronunciation', 0),
+                        'intonation_stress': comparison_results.get('change_intonation_stress', 0),
+                    },
+                    'average_change': comparison_results.get('average_change', 0),
+                    'new_vocab_phrases': comparison_results.get('new_vocab_phrases', []),
+                    'progress_summary': comparison_results.get('progress_summary', ''),
+                    'remaining_issues': comparison_results.get('remaining_issues', ''),
+                    'previous_course': previous_eval.get('course_order', ''),
+                    'previous_date': previous_eval.get('evaluation_date', '')
+                }
 
             # Save to database
             response_data['audio_filename'] = os.path.basename(filepath)
