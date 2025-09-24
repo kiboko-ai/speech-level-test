@@ -200,6 +200,14 @@ const EvaluationDetail: React.FC = () => {
                   fill="#667eea"
                   fillOpacity={0.6}
                 />
+                <Tooltip
+                  formatter={(value: number) => `${value.toFixed(1)}/10`}
+                  contentStyle={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: '1px solid #667eea',
+                    borderRadius: '4px'
+                  }}
+                />
               </RadarChart>
             </ResponsiveContainer>
           </Box>
