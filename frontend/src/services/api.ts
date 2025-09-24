@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'http://localhost:5001';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -64,7 +64,7 @@ export interface Evaluation {
 }
 
 export const checkStudent = async (studentId: string) => {
-  const response = await api.post('/students/check', { student_id: studentId });
+  const response = await api.post('/check_student', { student_id: studentId });
   return response.data;
 };
 
