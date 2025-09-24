@@ -162,90 +162,70 @@ const EvaluationDetail: React.FC = () => {
         </Card>
       </Box>
 
-      {/* Charts */}
+      {/* Charts and Detailed Scores */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3, mb: 4 }}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>Performance Radar</Typography>
-            <ResponsiveContainer width="100%" height={400}>
-              <RadarChart data={radarData}>
-                <PolarGrid />
-                <PolarAngleAxis dataKey="category" />
-                <PolarRadiusAxis domain={[0, 10]} />
-                <Radar
-                  name="Score"
-                  dataKey="score"
-                  stroke="#667eea"
-                  fill="#667eea"
-                  fillOpacity={0.6}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
-          </Paper>
         <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Score Breakdown</Typography>
+          <Typography variant="h6" sx={{ mb: 2 }}>Performance Radar</Typography>
           <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={barData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
-              <YAxis domain={[0, 10]} />
-              <Tooltip />
-              <Bar dataKey="value">
-                {barData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={getCategoryColor(entry.category)} />
-                ))}
-              </Bar>
-            </BarChart>
+            <RadarChart data={radarData}>
+              <PolarGrid />
+              <PolarAngleAxis dataKey="category" />
+              <PolarRadiusAxis domain={[0, 10]} />
+              <Radar
+                name="Score"
+                dataKey="score"
+                stroke="#667eea"
+                fill="#667eea"
+                fillOpacity={0.6}
+              />
+            </RadarChart>
           </ResponsiveContainer>
         </Paper>
-      </Box>
-
-      {/* Detailed Scores */}
-      <Paper sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h6" sx={{ mb: 3 }}>Detailed Scores</Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
-          {[
-            { title: 'Content Relevance', items: [
-              { label: 'Task Coverage', value: evaluation.task_coverage },
-              { label: 'Appropriateness', value: evaluation.appropriateness }
-            ]},
-            { title: 'Accuracy', items: [
-              { label: 'Grammar Control', value: evaluation.grammar_control },
-              { label: 'Vocabulary Use', value: evaluation.vocabulary_use }
-            ]},
-            { title: 'Coherence', items: [
-              { label: 'Logical Flow', value: evaluation.logical_flow },
-              { label: 'Cohesive Devices', value: evaluation.cohesive_devices }
-            ]},
-            { title: 'Delivery', items: [
-              { label: 'Pronunciation', value: evaluation.pronunciation },
-              { label: 'Intonation & Stress', value: evaluation.intonation_stress }
-            ]}
-          ].map((category) => (
-            <Box key={category.title}>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6" sx={{ mb: 3 }}>Detailed Scores</Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2 }}>
+            {[
+              { title: 'Content Relevance', items: [
+                { label: 'Task Coverage', value: evaluation.task_coverage },
+                { label: 'Appropriateness', value: evaluation.appropriateness }
+              ]},
+              { title: 'Accuracy', items: [
+                { label: 'Grammar Control', value: evaluation.grammar_control },
+                { label: 'Vocabulary Use', value: evaluation.vocabulary_use }
+              ]},
+              { title: 'Coherence', items: [
+                { label: 'Logical Flow', value: evaluation.logical_flow },
+                { label: 'Cohesive Devices', value: evaluation.cohesive_devices }
+              ]},
+              { title: 'Delivery', items: [
+                { label: 'Pronunciation', value: evaluation.pronunciation },
+                { label: 'Intonation & Stress', value: evaluation.intonation_stress }
+              ]}
+            ].map((category) => (
+              <Box key={category.title} sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
                   {category.title}
                 </Typography>
                 {category.items.map((item) => (
-                  <Box key={item.label} sx={{ mb: 1.5 }}>
+                  <Box key={item.label} sx={{ mb: 1 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography variant="body2">{item.label}</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: getScoreColor(item.value) }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>{item.label}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: getScoreColor(item.value), fontSize: '0.875rem' }}>
                         {item.value.toFixed(1)}/10
                       </Typography>
                     </Box>
                     <LinearProgress
                       variant="determinate"
                       value={item.value * 10}
-                      sx={{ height: 8, borderRadius: 4 }}
+                      sx={{ height: 6, borderRadius: 3 }}
                     />
                   </Box>
                 ))}
               </Box>
-            </Box>
-          ))}
-        </Box>
-      </Paper>
+            ))}
+          </Box>
+        </Paper>
+      </Box>
 
       {/* Feedback */}
       {evaluation.feedback && (
