@@ -189,15 +189,20 @@ const Dashboard: React.FC = () => {
 
             {studentData.evaluations.length > 0 ? (
               <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={studentData.evaluations}>
+                <BarChart
+                  data={studentData.evaluations}
+                  barCategoryGap="20%"
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="course_order" />
-                  <YAxis domain={[0, 10]} />
+                  <YAxis domain={[0, 10]} ticks={[0, 2, 4, 6, 8, 10]} />
                   <Tooltip />
                   <Bar
                     dataKey="average_score"
                     onClick={(data: any) => navigate(`/evaluation/${studentId}/${data.course_order}`)}
                     style={{ cursor: 'pointer' }}
+                    maxBarSize={80}
                   >
                     {studentData.evaluations.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={getScoreColor(entry.average_score)} />
