@@ -5,7 +5,7 @@ import {
   LinearProgress, Button, Chip, Divider, IconButton
 } from '@mui/material';
 import {
-  ArrowBack, Print, Mic, Speed, Group, Psychology,
+  ArrowBack, Print, Mic, Speed, Psychology,
   TrendingUp, TrendingDown, Remove
 } from '@mui/icons-material';
 import {
@@ -132,7 +132,7 @@ const EvaluationDetail: React.FC = () => {
       </Paper>
 
       {/* Metrics */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3, mb: 4 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -158,15 +158,6 @@ const EvaluationDetail: React.FC = () => {
               <Typography color="text.secondary">Confidence</Typography>
             </Box>
             <Typography variant="h4">{(evaluation.confidence * 100).toFixed(0)}%</Typography>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <Group sx={{ mr: 1, color: 'warning.main' }} />
-              <Typography color="text.secondary">Speaker</Typography>
-            </Box>
-            <Typography variant="h4">{evaluation.student_speaker}</Typography>
           </CardContent>
         </Card>
       </Box>
