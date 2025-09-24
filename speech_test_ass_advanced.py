@@ -233,54 +233,81 @@ Output JSON format:
 
         print("🔍 Using AI to analyze conversation context and identify roles...")
 
-        # Prepare conversation for AI analysis
+        # Prepare FULL conversation for AI analysis (not just first 20)
         conversation_text = ""
-        for utterance in utterances[:20]:  # Limit to first 20 utterances for context
+        for i, utterance in enumerate(utterances):
             speaker = utterance['speaker']
             text = utterance['text']
             conversation_text += f"{speaker}: {text}\n"
+            # Include more context but cap at reasonable length
+            if i >= 50 and len(conversation_text) > 5000:
+                conversation_text += f"... (conversation continues for {len(utterances) - i} more utterances)\n"
+                break
 
         # Use GPT-4 to analyze the conversation context
         from openai import OpenAI
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-        prompt = f"""Analyze this English lesson conversation and identify who is the student and who is the teacher.
+        prompt = f"""You are analyzing an English language lesson conversation between a teacher and a student.
+Your task is to identify which speaker (A or B) is the STUDENT based on the ENTIRE conversation context.
 
-Conversation:
+FULL CONVERSATION:
 {conversation_text}
 
-Analyze the context, content, and interaction patterns:
-1. Who is asking learning questions vs teaching questions?
-2. Who is giving instructions vs following them?
-3. Who is providing feedback vs receiving it?
-4. Who is explaining concepts vs trying to understand them?
-5. Who shows authority vs deference?
-6. Who demonstrates teaching expertise vs learning attempts?
+CRITICAL ANALYSIS POINTS:
+1. Teaching patterns:
+   - Who asks "How about...?", "What about...?", "Can you tell me...?" (teacher questions)
+   - Who responds with attempts, answers, or "I think..." (student responses)
+   - Who says "Good!", "That's right", "Very good", "Excellent" (teacher feedback)
+   - Who receives corrections or guidance?
 
-Based on the actual conversation content and context, identify:
-- Which speaker (A or B) is the STUDENT
-- Confidence level (high/medium/low)
-- Key evidence from the conversation
+2. Language proficiency:
+   - Who makes grammar mistakes or uses simpler language? (student)
+   - Who speaks with perfect/native-like English? (teacher)
+   - Who struggles with vocabulary or pronunciation? (student)
+   - Who explains word meanings or grammar? (teacher)
+
+3. Conversation flow:
+   - Who leads the conversation and sets topics? (teacher)
+   - Who follows instructions or prompts? (student)
+   - Who asks for clarification about English? (student)
+   - Who provides explanations? (teacher)
+
+4. Common teacher phrases:
+   - "Let's talk about...", "Now I want you to...", "Can you describe...?"
+   - "That's correct", "Good job", "Try again"
+   - Giving examples or model sentences
+
+5. Common student patterns:
+   - Hesitations: "um", "uh", "I think..."
+   - Asking: "What does X mean?", "How do you say...?"
+   - Making mistakes and being corrected
+   - Shorter, simpler responses
+
+IMPORTANT: Look at the OVERALL pattern across the ENTIRE conversation, not just individual utterances.
+The student is the one LEARNING and PRACTICING English.
+The teacher is the one TEACHING and GUIDING.
 
 Output JSON:
 {{
   "student_speaker": "A" or "B",
   "teacher_speaker": "A" or "B",
   "confidence": "high/medium/low",
-  "student_evidence": ["evidence 1", "evidence 2"],
-  "teacher_evidence": ["evidence 1", "evidence 2"]
+  "student_evidence": ["specific quote or pattern", "another specific example"],
+  "teacher_evidence": ["specific quote or pattern", "another specific example"],
+  "reasoning": "Brief explanation of the overall pattern observed"
 }}"""
 
         try:
             response = client.chat.completions.create(
                 model="gpt-4-turbo-preview",
                 messages=[
-                    {"role": "system", "content": "You are an expert at analyzing educational conversations and identifying teacher-student dynamics based on context."},
+                    {"role": "system", "content": "You are an expert at analyzing English language teaching conversations. You can accurately identify teachers vs students based on conversation patterns, language proficiency, and teaching dynamics."},
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_object"},
                 temperature=0.1,  # Low temperature for consistency
-                max_tokens=300
+                max_tokens=500  # Increased for more detailed analysis
             )
 
             analysis = json.loads(response.choices[0].message.content)
