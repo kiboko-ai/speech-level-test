@@ -8,7 +8,7 @@ import {
   Search, Add, Assessment, TrendingUp, School, CheckCircle
 } from '@mui/icons-material';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
+  ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend
 } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -189,13 +189,42 @@ const Dashboard: React.FC = () => {
 
             {studentData.evaluations.length > 0 ? (
               <ResponsiveContainer width="100%" height={400}>
-                <BarChart
-                  data={[...studentData.evaluations].sort((a, b) => {
-                    // Convert course_order to numbers for proper sorting
-                    const numA = parseInt(a.course_order);
-                    const numB = parseInt(b.course_order);
-                    return numA - numB;
-                  })}
+                <ComposedChart
+                  data={(() => {
+                    // Sort and calculate moving average
+                    const sortedData = [...studentData.evaluations].sort((a, b) => {
+                      const numA = parseInt(a.course_order);
+                      const numB = parseInt(b.course_order);
+                      return numA - numB;
+                    });
+
+                    // Calculate 3-point moving average
+                    const dataWithTrend = sortedData.map((item, index) => {
+                      let trendValue = null;
+                      const windowSize = 3;
+
+                      if (index >= windowSize - 1) {
+                        let sum = 0;
+                        for (let i = 0; i < windowSize; i++) {
+                          sum += sortedData[index - i].average_score;
+                        }
+                        trendValue = sum / windowSize;
+                      } else if (index > 0) {
+                        // For first few points, use available data
+                        let sum = 0;
+                        for (let i = 0; i <= index; i++) {
+                          sum += sortedData[i].average_score;
+                        }
+                        trendValue = sum / (index + 1);
+                      } else {
+                        trendValue = item.average_score;
+                      }
+
+                      return { ...item, trend: trendValue };
+                    });
+
+                    return dataWithTrend;
+                  })()}
                   barCategoryGap="20%"
                   margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                 >
@@ -203,7 +232,9 @@ const Dashboard: React.FC = () => {
                   <XAxis dataKey="course_order" axisLine={{ strokeWidth: 1 }} tickLine={{ strokeWidth: 1 }} />
                   <YAxis domain={[0, 10]} ticks={[0, 2, 4, 6, 8, 10]} />
                   <Tooltip />
+                  <Legend />
                   <Bar
+                    name="Score"
                     dataKey="average_score"
                     onClick={(data: any) => navigate(`/evaluation/${studentId}/${data.course_order}`)}
                     style={{ cursor: 'pointer' }}
@@ -213,7 +244,16 @@ const Dashboard: React.FC = () => {
                       <Cell key={`cell-${index}`} fill={getScoreColor(entry.average_score)} />
                     ))}
                   </Bar>
-                </BarChart>
+                  <Line
+                    name="Trend (3-point MA)"
+                    type="monotone"
+                    dataKey="trend"
+                    stroke="#ff7300"
+                    strokeWidth={2}
+                    dot={{ fill: '#ff7300', r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </ComposedChart>
               </ResponsiveContainer>
             ) : (
               <Box sx={{ textAlign: 'center', py: 8 }}>
