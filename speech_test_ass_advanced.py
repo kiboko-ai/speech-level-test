@@ -394,9 +394,17 @@ IMPORTANT EVALUATION GUIDELINES:
    - Focus ONLY on the actual content and message being conveyed
    - Evaluate grammar based on completed thoughts, not interrupted ones
 
-2. For Delivery (pronunciation, intonation_stress) criteria:
+2. EXCLUDE FROM EVALUATION (DO NOT PENALIZE):
+   - Proper nouns (personal names, place names, brand names)
+   - Pronunciation of names (e.g., McDonald's, Seoul, Jason, Maria)
+   - Grammar of foreign names/places when used correctly in context
+   - Cultural references that may be unfamiliar
+   - Do NOT deduct points for mispronouncing or struggling with proper nouns
+
+3. For Delivery (pronunciation, intonation_stress) criteria:
    - DO consider hesitations, repetitions, and fluency issues
    - These affect the delivery quality and should impact the score
+   - BUT exclude proper noun pronunciation from scoring
 
 - CRITICAL: Apply STRICT level-based scoring. The SAME performance MUST receive DIFFERENT scores:
 
@@ -449,8 +457,11 @@ Example: A student saying "I like McDonald's very much, I usually cook pork"
 
 IMPORTANT for vocab_phrases_used:
 - Extract INDIVIDUAL VOCABULARY WORDS (not phrases)
-- Focus on: nouns (temperature, Celsius, weather), verbs (describe, prefer), adjectives (humid, cold), adverbs
-- Exclude: articles (a, the), pronouns (I, you, it), basic verbs (is, are, have), prepositions
+- Focus on: common nouns, verbs, adjectives, adverbs
+- EXCLUDE:
+  * Articles (a, the), pronouns (I, you, it), basic verbs (is, are, have), prepositions
+  * PROPER NOUNS (names of people, places, brands, countries, cities)
+  * Do NOT include: McDonald's, Seoul, Korea, Jason, etc.
 - Prioritize: topic-specific words, descriptive words, academic vocabulary
 
 Output JSON:
