@@ -79,12 +79,6 @@ const EvaluationDetail: React.FC = () => {
     { name: 'Intonation', value: evaluation.intonation_stress, category: 'Delivery' },
   ];
 
-  const getScoreColor = (score: number) => {
-    if (score >= 8) return 'success.main';
-    if (score >= 6) return 'info.main';
-    if (score >= 4) return 'warning.main';
-    return 'error.main';
-  };
 
   const getCategoryColor = (category: string) => {
     const colors: any = {
@@ -273,7 +267,7 @@ const EvaluationDetail: React.FC = () => {
                           </Box>
                         )}
                       </Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: getScoreColor(item.value), fontSize: '0.875rem' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
                         {item.value.toFixed(1)}/10
                       </Typography>
                     </Box>
