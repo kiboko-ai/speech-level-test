@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import {
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell
 } from 'recharts';
 import { getEvaluationDetail, Evaluation } from '../services/api';
 import toast from 'react-hot-toast';
@@ -184,12 +184,16 @@ const EvaluationDetail: React.FC = () => {
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>Score Breakdown</Typography>
           <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={barData} layout="horizontal">
+            <BarChart data={barData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" domain={[0, 10]} />
-              <YAxis dataKey="name" type="category" width={120} />
+              <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+              <YAxis domain={[0, 10]} />
               <Tooltip />
-              <Bar dataKey="value" fill="#667eea" />
+              <Bar dataKey="value">
+                {barData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={getCategoryColor(entry.category)} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </Paper>
