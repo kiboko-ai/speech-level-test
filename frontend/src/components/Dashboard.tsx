@@ -190,7 +190,7 @@ const Dashboard: React.FC = () => {
             {studentData.evaluations.length > 0 ? (
               <ResponsiveContainer width="100%" height={400}>
                 <BarChart
-                  data={studentData.evaluations.sort((a, b) => {
+                  data={[...studentData.evaluations].sort((a, b) => {
                     // Convert course_order to numbers for proper sorting
                     const numA = parseInt(a.course_order);
                     const numB = parseInt(b.course_order);

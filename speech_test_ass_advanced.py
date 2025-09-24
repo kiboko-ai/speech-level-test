@@ -447,6 +447,12 @@ Example: A student saying "I like McDonald's very much, I usually cook pork"
 - Level 3: Would score 4.0-4.5 (too simple for intermediate)
 - Level 4: Would score 2.5-3.0 (far below advanced expectations)
 
+IMPORTANT for vocab_phrases_used:
+- Extract INDIVIDUAL VOCABULARY WORDS (not phrases)
+- Focus on: nouns (temperature, Celsius, weather), verbs (describe, prefer), adjectives (humid, cold), adverbs
+- Exclude: articles (a, the), pronouns (I, you, it), basic verbs (is, are, have), prepositions
+- Prioritize: topic-specific words, descriptive words, academic vocabulary
+
 Output JSON:
 {{
   "task_coverage": <score>,
@@ -455,7 +461,7 @@ Output JSON:
   "vocabulary_use": <score>,
   "logical_flow": <score>,
   "cohesive_devices": <score>,
-  "vocab_phrases_used": ["phrase1", "phrase2"],
+  "vocab_phrases_used": ["temperature", "Celsius", "humid", "weather", "prefer"],
   "feedback": "1-2 strengths and 1-2 weaknesses"
 }}"""
 
@@ -497,7 +503,10 @@ Task:
   • Levels 3–4: value better accuracy, complex structures, fluency, naturalness.
 
 Also:
-- Extract **new important vocabulary/phrases** that appeared in this lesson but not in the previous lesson.
+- Extract **new important VOCABULARY WORDS** (not full phrases) that appeared in this lesson but not in the previous lesson.
+  Focus on: nouns, verbs, adjectives, adverbs - individual meaningful words
+  Exclude: basic words like "is", "the", "a", common pronouns
+  Prioritize: topic-specific vocabulary, academic words, descriptive words
 - Highlight 1–2 key progress points and 1–2 areas still needing improvement.
 
 Output JSON format:
@@ -512,7 +521,7 @@ Output JSON format:
   "change_pronunciation": <change_score>,
   "change_intonation_stress": <change_score>,
   "average_change": <average>,
-  "new_vocab_phrases": ["<word_or_phrase_1>", "<word_or_phrase_2>", ...],
+  "new_vocab_phrases": ["<single_word_1>", "<single_word_2>", ...],
   "progress_summary": "<short_text_summary>",
   "remaining_issues": "<short_text_summary>"
 }}"""
