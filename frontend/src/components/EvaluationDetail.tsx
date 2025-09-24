@@ -30,7 +30,7 @@ const EvaluationDetail: React.FC = () => {
 
     try {
       const response = await getEvaluationDetail(studentId, courseOrder);
-      setEvaluation(response.evaluation);
+      setEvaluation(response);
     } catch (error) {
       toast.error('Failed to load evaluation');
       console.error(error);

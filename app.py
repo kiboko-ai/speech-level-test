@@ -69,12 +69,9 @@ def evaluation_detail(student_id, course_order):
     evaluation = db.get_evaluation_by_course(student_id, course_order)
 
     if not evaluation:
-        return "Evaluation not found", 404
+        return jsonify({'error': 'Evaluation not found'}), 404
 
-    return render_template('evaluation_detail.html',
-                         student_id=student_id,
-                         course_order=course_order,
-                         evaluation=evaluation)
+    return jsonify(evaluation)
 
 @app.route('/evaluate', methods=['POST'])
 def evaluate():

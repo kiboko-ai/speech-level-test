@@ -74,7 +74,7 @@ export const getStudentProgress = async (studentId: string) => {
 };
 
 export const getEvaluationDetail = async (studentId: string, courseOrder: string) => {
-  const response = await api.get(`/students/${studentId}/evaluations/${courseOrder}`);
+  const response = await api.get(`/evaluation/${studentId}/${courseOrder}`);
   return response.data;
 };
 
