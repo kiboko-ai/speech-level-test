@@ -213,24 +213,34 @@ const EvaluationDetail: React.FC = () => {
           </Box>
         </Paper>
         <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 3 }}>Detailed Scores</Typography>
+          <Typography variant="h6" sx={{ mb: 3 }}>
+            Detailed Scores
+            {evaluation.progress_comparison && (
+              <Chip
+                label={`vs ${evaluation.progress_comparison.previous_course}`}
+                sx={{ ml: 2 }}
+                size="small"
+                color="primary"
+              />
+            )}
+          </Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2 }}>
             {[
               { title: 'Content Relevance', items: [
-                { label: 'Task Coverage', value: evaluation.task_coverage },
-                { label: 'Appropriateness', value: evaluation.appropriateness }
+                { label: 'Task Coverage', value: evaluation.task_coverage, change: evaluation.progress_comparison?.change_scores?.task_coverage },
+                { label: 'Appropriateness', value: evaluation.appropriateness, change: evaluation.progress_comparison?.change_scores?.appropriateness }
               ]},
               { title: 'Accuracy', items: [
-                { label: 'Grammar Control', value: evaluation.grammar_control },
-                { label: 'Vocabulary Use', value: evaluation.vocabulary_use }
+                { label: 'Grammar Control', value: evaluation.grammar_control, change: evaluation.progress_comparison?.change_scores?.grammar_control },
+                { label: 'Vocabulary Use', value: evaluation.vocabulary_use, change: evaluation.progress_comparison?.change_scores?.vocabulary_use }
               ]},
               { title: 'Coherence', items: [
-                { label: 'Logical Flow', value: evaluation.logical_flow },
-                { label: 'Cohesive Devices', value: evaluation.cohesive_devices }
+                { label: 'Logical Flow', value: evaluation.logical_flow, change: evaluation.progress_comparison?.change_scores?.logical_flow },
+                { label: 'Cohesive Devices', value: evaluation.cohesive_devices, change: evaluation.progress_comparison?.change_scores?.cohesive_devices }
               ]},
               { title: 'Delivery', items: [
-                { label: 'Pronunciation', value: evaluation.pronunciation },
-                { label: 'Intonation & Stress', value: evaluation.intonation_stress }
+                { label: 'Pronunciation', value: evaluation.pronunciation, change: evaluation.progress_comparison?.change_scores?.pronunciation },
+                { label: 'Intonation & Stress', value: evaluation.intonation_stress, change: evaluation.progress_comparison?.change_scores?.intonation_stress }
               ]}
             ].map((category) => (
               <Box key={category.title} sx={{ mb: 2 }}>
@@ -240,7 +250,29 @@ const EvaluationDetail: React.FC = () => {
                 {category.items.map((item) => (
                   <Box key={item.label} sx={{ mb: 1 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>{item.label}</Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>{item.label}</Typography>
+                        {item.change !== undefined && (
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {item.change > 0 ? (
+                              <TrendingUp sx={{ fontSize: 16, color: 'success.main' }} />
+                            ) : item.change < 0 ? (
+                              <TrendingDown sx={{ fontSize: 16, color: 'error.main' }} />
+                            ) : (
+                              <Remove sx={{ fontSize: 16, color: 'grey.500' }} />
+                            )}
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                fontWeight: 600,
+                                color: item.change > 0 ? 'success.main' : item.change < 0 ? 'error.main' : 'text.secondary'
+                              }}
+                            >
+                              {item.change > 0 ? '+' : ''}{item.change.toFixed(1)}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
                       <Typography variant="body2" sx={{ fontWeight: 600, color: getScoreColor(item.value), fontSize: '0.875rem' }}>
                         {item.value.toFixed(1)}/10
                       </Typography>
@@ -255,6 +287,44 @@ const EvaluationDetail: React.FC = () => {
               </Box>
             ))}
           </Box>
+
+          {/* Progress Comparison Details */}
+          {evaluation.progress_comparison && (
+            <Box sx={{ mt: 3 }}>
+              {/* Progress Summary */}
+              {evaluation.progress_comparison.progress_summary && (
+                <Box sx={{ mb: 2, p: 2, bgcolor: 'success.50', borderRadius: 1 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>✅ Progress Summary</Typography>
+                  <Typography variant="body2">{evaluation.progress_comparison.progress_summary}</Typography>
+                </Box>
+              )}
+
+              {/* Remaining Issues */}
+              {evaluation.progress_comparison.remaining_issues && (
+                <Box sx={{ mb: 2, p: 2, bgcolor: 'warning.50', borderRadius: 1 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>⚠️ Areas for Improvement</Typography>
+                  <Typography variant="body2">{evaluation.progress_comparison.remaining_issues}</Typography>
+                </Box>
+              )}
+
+              {/* New Vocabulary */}
+              {evaluation.progress_comparison.new_vocab_phrases && evaluation.progress_comparison.new_vocab_phrases.length > 0 && (
+                <Box sx={{ p: 2, bgcolor: 'info.50', borderRadius: 1 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>🆕 New Vocabulary This Lesson</Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {evaluation.progress_comparison.new_vocab_phrases.map((phrase, index) => (
+                      <Chip
+                        key={index}
+                        label={phrase}
+                        size="small"
+                        sx={{ bgcolor: 'white' }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          )}
         </Paper>
       </Box>
 
@@ -266,123 +336,6 @@ const EvaluationDetail: React.FC = () => {
         </Paper>
       )}
 
-      {/* Progress Comparison */}
-      {evaluation.progress_comparison && (
-        <Paper sx={{ p: 3, mb: 4, bgcolor: 'background.paper', border: '2px solid', borderColor: 'primary.main' }}>
-          <Typography variant="h6" sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
-            📊 Progress Comparison with Previous Lesson
-            <Chip
-              label={`vs ${evaluation.progress_comparison.previous_course}`}
-              sx={{ ml: 2 }}
-              size="small"
-              color="primary"
-            />
-          </Typography>
-
-          {/* Overall Change Indicator */}
-          <Box sx={{ mb: 3, p: 2, bgcolor: evaluation.progress_comparison.average_change > 0 ? 'success.50' : evaluation.progress_comparison.average_change < 0 ? 'error.50' : 'grey.100', borderRadius: 2 }}>
-            <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {evaluation.progress_comparison.average_change > 0 ? (
-                <>
-                  <TrendingUp sx={{ mr: 1, color: 'success.main' }} />
-                  <span style={{ color: 'green' }}>+{evaluation.progress_comparison.average_change.toFixed(2)} Improvement</span>
-                </>
-              ) : evaluation.progress_comparison.average_change < 0 ? (
-                <>
-                  <TrendingDown sx={{ mr: 1, color: 'error.main' }} />
-                  <span style={{ color: 'red' }}>{evaluation.progress_comparison.average_change.toFixed(2)} Decline</span>
-                </>
-              ) : (
-                <>
-                  <Remove sx={{ mr: 1 }} />
-                  <span>No Change</span>
-                </>
-              )}
-            </Typography>
-          </Box>
-
-          {/* Change Scores Grid */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2, mb: 3 }}>
-            {[
-              { label: 'Task Coverage', value: evaluation.progress_comparison.change_scores.task_coverage },
-              { label: 'Appropriateness', value: evaluation.progress_comparison.change_scores.appropriateness },
-              { label: 'Grammar Control', value: evaluation.progress_comparison.change_scores.grammar_control },
-              { label: 'Vocabulary Use', value: evaluation.progress_comparison.change_scores.vocabulary_use },
-              { label: 'Logical Flow', value: evaluation.progress_comparison.change_scores.logical_flow },
-              { label: 'Cohesive Devices', value: evaluation.progress_comparison.change_scores.cohesive_devices },
-              { label: 'Pronunciation', value: evaluation.progress_comparison.change_scores.pronunciation },
-              { label: 'Intonation & Stress', value: evaluation.progress_comparison.change_scores.intonation_stress }
-            ].map((item) => (
-              <Box key={item.label} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="body2">{item.label}</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  {item.value > 0 ? (
-                    <TrendingUp sx={{ mr: 0.5, color: 'success.main', fontSize: 20 }} />
-                  ) : item.value < 0 ? (
-                    <TrendingDown sx={{ mr: 0.5, color: 'error.main', fontSize: 20 }} />
-                  ) : (
-                    <Remove sx={{ mr: 0.5, color: 'grey.500', fontSize: 20 }} />
-                  )}
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 600,
-                      color: item.value > 0 ? 'success.main' : item.value < 0 ? 'error.main' : 'text.secondary'
-                    }}
-                  >
-                    {item.value > 0 ? '+' : ''}{item.value.toFixed(1)}
-                  </Typography>
-                </Box>
-              </Box>
-            ))}
-          </Box>
-
-          {/* Progress Summary */}
-          {evaluation.progress_comparison.progress_summary && (
-            <Box sx={{ mb: 2, p: 2, bgcolor: 'success.50', borderRadius: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>✅ Progress Summary</Typography>
-              <Typography variant="body2">{evaluation.progress_comparison.progress_summary}</Typography>
-            </Box>
-          )}
-
-          {/* Remaining Issues */}
-          {evaluation.progress_comparison.remaining_issues && (
-            <Box sx={{ mb: 2, p: 2, bgcolor: 'warning.50', borderRadius: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>⚠️ Areas for Improvement</Typography>
-              <Typography variant="body2">{evaluation.progress_comparison.remaining_issues}</Typography>
-            </Box>
-          )}
-
-          {/* New Vocabulary */}
-          {evaluation.progress_comparison.new_vocab_phrases && evaluation.progress_comparison.new_vocab_phrases.length > 0 && (
-            <Box sx={{ p: 2, bgcolor: 'info.50', borderRadius: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>🆕 New Vocabulary This Lesson</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {evaluation.progress_comparison.new_vocab_phrases.map((phrase, index) => (
-                  <Chip
-                    key={index}
-                    label={phrase}
-                    size="small"
-                    sx={{ bgcolor: 'white' }}
-                  />
-                ))}
-              </Box>
-            </Box>
-          )}
-        </Paper>
-      )}
-
-      {/* Vocabulary */}
-      {evaluation.vocab_phrases && evaluation.vocab_phrases.length > 0 && (
-        <Paper sx={{ p: 3, mb: 4 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Key Vocabulary Used</Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {evaluation.vocab_phrases.map((phrase, index) => (
-              <Chip key={index} label={phrase} variant="outlined" />
-            ))}
-          </Box>
-        </Paper>
-      )}
 
       {/* Actions */}
       <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
