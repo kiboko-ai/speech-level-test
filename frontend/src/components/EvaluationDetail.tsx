@@ -337,6 +337,52 @@ const EvaluationDetail: React.FC = () => {
       )}
 
 
+      {/* Conversation Transcript */}
+      {evaluation.student_text && (
+        <Paper sx={{ p: 3, mb: 4, bgcolor: 'grey.50' }}>
+          <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+            📝 Conversation Transcript
+            <Typography variant="caption" sx={{ ml: 2, color: 'text.secondary' }}>
+              (Speaker verification check)
+            </Typography>
+          </Typography>
+          <Box sx={{
+            p: 2,
+            bgcolor: 'white',
+            borderRadius: 1,
+            border: '1px solid',
+            borderColor: 'grey.300',
+            maxHeight: '400px',
+            overflow: 'auto',
+            fontFamily: 'monospace',
+            fontSize: '0.9rem',
+            lineHeight: 1.8
+          }}>
+            <Typography
+              variant="body2"
+              component="pre"
+              sx={{
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                fontFamily: 'inherit'
+              }}
+            >
+              {evaluation.student_text}
+            </Typography>
+          </Box>
+          <Box sx={{ mt: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Chip
+              label={`Student: ${evaluation.student_speaker}`}
+              size="small"
+              sx={{ bgcolor: 'primary.100' }}
+            />
+            <Typography variant="caption" color="text.secondary">
+              Word count: {evaluation.word_count} | Clarity: {(evaluation.clarity_ratio * 100).toFixed(0)}%
+            </Typography>
+          </Box>
+        </Paper>
+      )}
+
       {/* Actions */}
       <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
         <Button

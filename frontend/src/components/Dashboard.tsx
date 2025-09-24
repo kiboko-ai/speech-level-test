@@ -86,7 +86,7 @@ const Dashboard: React.FC = () => {
 
   const getScoreColor = (score: number) => {
     const hue = (score / 10) * 120;
-    return `hsl(${hue}, 70%, 50%)`;
+    return `hsl(${hue}, 100%, 40%)`;  // Darker green by reducing lightness from 50% to 35%
   };
 
   return (
@@ -192,10 +192,10 @@ const Dashboard: React.FC = () => {
                 <BarChart
                   data={studentData.evaluations}
                   barCategoryGap="20%"
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="course_order" />
+                  <XAxis dataKey="course_order" axisLine={{ strokeWidth: 1 }} tickLine={{ strokeWidth: 1 }} />
                   <YAxis domain={[0, 10]} ticks={[0, 2, 4, 6, 8, 10]} />
                   <Tooltip />
                   <Bar

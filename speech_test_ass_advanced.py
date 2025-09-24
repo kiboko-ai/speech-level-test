@@ -356,6 +356,21 @@ Intonation Score (already calculated): {intonation_score:.1f}
 Task:
 - Evaluate the student's performance using the rubric.
 - Score each sub-criterion from 1.0 to 10.0 in 0.2 increments for detailed assessment.
+
+IMPORTANT EVALUATION GUIDELINES:
+1. For Content Relevance (task_coverage, appropriateness), Accuracy (grammar_control, vocabulary_use),
+   and Coherence (logical_flow, cohesive_devices) criteria:
+   - IGNORE hesitation markers like "uh", "um", "er", "ah", "hmm"
+   - IGNORE filler words like isolated "a", "the" when used as hesitation
+   - IGNORE repetitions caused by hesitation (e.g., "I, I, I went" → evaluate as "I went")
+   - IGNORE false starts and self-corrections (e.g., "I want to- I would like to")
+   - Focus ONLY on the actual content and message being conveyed
+   - Evaluate grammar based on completed thoughts, not interrupted ones
+
+2. For Delivery (pronunciation, intonation_stress) criteria:
+   - DO consider hesitations, repetitions, and fluency issues
+   - These affect the delivery quality and should impact the score
+
 - CRITICAL: Apply STRICT level-based scoring. The SAME performance MUST receive DIFFERENT scores:
 
 For Level {course_level} students, use these SPECIFIC scoring guidelines:
