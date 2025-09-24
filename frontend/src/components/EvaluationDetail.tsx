@@ -164,22 +164,45 @@ const EvaluationDetail: React.FC = () => {
 
       {/* Charts and Detailed Scores */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3, mb: 4 }}>
-        <Paper sx={{ p: 3 }}>
+        <Paper sx={{ p: 3, display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h6" sx={{ mb: 2 }}>Performance Radar</Typography>
-          <ResponsiveContainer width="100%" height={400}>
-            <RadarChart data={radarData}>
-              <PolarGrid />
-              <PolarAngleAxis dataKey="category" />
-              <PolarRadiusAxis domain={[0, 10]} />
-              <Radar
-                name="Score"
-                dataKey="score"
-                stroke="#667eea"
-                fill="#667eea"
-                fillOpacity={0.6}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
+          <Box sx={{ flex: 1, minHeight: 400 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={radarData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+                <PolarGrid
+                  gridType="polygon"
+                  radialLines={true}
+                  strokeDasharray="0"
+                  stroke="#e0e0e0"
+                  strokeWidth={0.5}
+                />
+                {/* Custom polygon grid line for 5-unit mark */}
+                <PolarGrid
+                  gridType="polygon"
+                  radialLines={false}
+                  strokeDasharray="0"
+                  stroke="#999"
+                  strokeWidth={1.5}
+                  polarRadius={[5]}
+                  opacity={0.5}
+                />
+                <PolarAngleAxis dataKey="category" tick={{ fontSize: 12 }} />
+                <PolarRadiusAxis
+                  domain={[0, 10]}
+                  tickCount={11}
+                  tick={false}
+                  axisLine={false}
+                />
+                <Radar
+                  name="Score"
+                  dataKey="score"
+                  stroke="#667eea"
+                  fill="#667eea"
+                  fillOpacity={0.6}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          </Box>
         </Paper>
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" sx={{ mb: 3 }}>Detailed Scores</Typography>
