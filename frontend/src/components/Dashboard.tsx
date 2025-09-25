@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container, Box, Paper, TextField, Button, Typography, Card, CardContent,
   Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel,
-  Select, MenuItem, LinearProgress, Alert, Fab, IconButton, Chip, Stack
+  Select, MenuItem, LinearProgress, Alert
 } from '@mui/material';
 import {
   Search, Add, Assessment, TrendingUp, School, CheckCircle
@@ -10,13 +10,14 @@ import {
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend
 } from 'recharts';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { checkStudent, evaluateAudio, StudentProgress } from '../services/api';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [studentId, setStudentId] = useState('');
+  const { studentId: urlStudentId } = useParams<{ studentId?: string }>();
+  const [studentId, setStudentId] = useState(urlStudentId || '');
   const [studentData, setStudentData] = useState<StudentProgress | null>(null);
   const [loading, setLoading] = useState(false);
   const [evaluating, setEvaluating] = useState(false);
@@ -66,7 +67,7 @@ const Dashboard: React.FC = () => {
     const loadingToast = toast.loading('Processing evaluation... This may take 30-60 seconds');
 
     try {
-      const response = await evaluateAudio(formData);
+      await evaluateAudio(formData);
       toast.dismiss(loadingToast);
       toast.success('Evaluation completed successfully!');
 
@@ -88,6 +89,26 @@ const Dashboard: React.FC = () => {
     const hue = (score / 10) * 120;
     return `hsl(${hue}, 100%, 40%)`;  // Darker green by reducing lightness from 50% to 35%
   };
+
+  // Auto-load student data if studentId is provided in URL
+  useEffect(() => {
+    if (urlStudentId) {
+      setStudentId(urlStudentId);
+      // Automatically fetch student data
+      const fetchStudentData = async () => {
+        setLoading(true);
+        try {
+          const response = await checkStudent(urlStudentId);
+          setStudentData(response.progress);
+        } catch (error) {
+          console.error('Failed to load student data:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchStudentData();
+    }
+  }, [urlStudentId]);
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>

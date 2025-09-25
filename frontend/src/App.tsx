@@ -44,6 +44,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/:studentId" element={<Dashboard />} />
           <Route path="/evaluation/:studentId/:courseOrder" element={<EvaluationDetail />} />
         </Routes>
       </Router>
