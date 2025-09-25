@@ -284,3 +284,23 @@ class EvaluationDatabase:
             return {'evaluations': [], 'statistics': {}}
         finally:
             conn.close()
+
+    def delete_evaluation(self, student_id, course_order):
+        """Delete an evaluation by student_id and course_order"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute('''
+                DELETE FROM evaluations
+                WHERE student_id = ? AND course_order = ?
+            ''', (student_id, course_order))
+
+            conn.commit()
+            deleted_rows = cursor.rowcount
+            return deleted_rows > 0
+        except Exception as e:
+            print(f"Error deleting evaluation: {e}")
+            return False
+        finally:
+            conn.close()

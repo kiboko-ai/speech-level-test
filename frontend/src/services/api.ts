@@ -87,4 +87,9 @@ export const evaluateAudio = async (formData: FormData) => {
   return response.data;
 };
 
+export const deleteEvaluation = async (studentId: string, courseOrder: string) => {
+  const response = await api.delete(`/evaluation/${studentId}/${courseOrder}`);
+  return response.data;
+};
+
 export default api;

@@ -2,17 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container, Box, Paper, Typography, Card, CardContent,
-  LinearProgress, Button, Chip, Divider, IconButton
+  LinearProgress, Button, Chip, Divider, IconButton,
+  Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress
 } from '@mui/material';
 import {
   ArrowBack, Print, Mic, Speed, Psychology,
-  TrendingUp, TrendingDown, Remove
+  TrendingUp, TrendingDown, Remove, Delete
 } from '@mui/icons-material';
 import {
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell
 } from 'recharts';
-import { getEvaluationDetail, Evaluation } from '../services/api';
+import { getEvaluationDetail, deleteEvaluation, Evaluation } from '../services/api';
 import toast from 'react-hot-toast';
 
 const EvaluationDetail: React.FC = () => {
@@ -20,6 +21,8 @@ const EvaluationDetail: React.FC = () => {
   const navigate = useNavigate();
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchEvaluation();
@@ -36,6 +39,23 @@ const EvaluationDetail: React.FC = () => {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteEvaluation = async () => {
+    if (!studentId || !courseOrder) return;
+
+    setDeleting(true);
+    try {
+      await deleteEvaluation(studentId, courseOrder);
+      toast.success('Evaluation deleted successfully');
+      setDeleteDialogOpen(false);
+      navigate('/');
+    } catch (error) {
+      toast.error('Failed to delete evaluation');
+      console.error(error);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -386,7 +406,57 @@ const EvaluationDetail: React.FC = () => {
         >
           Print Report
         </Button>
+        <Button
+          variant="outlined"
+          color="error"
+          startIcon={<Delete />}
+          onClick={() => setDeleteDialogOpen(true)}
+        >
+          Delete Evaluation
+        </Button>
       </Box>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          Delete Evaluation
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this evaluation? This action cannot be undone.
+          </Typography>
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Student ID: {studentId}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Course: {courseOrder}
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            disabled={deleting}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteEvaluation}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={20} /> : <Delete />}
+          >
+            {deleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

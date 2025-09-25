@@ -73,6 +73,20 @@ def evaluation_detail(student_id, course_order):
 
     return jsonify(evaluation)
 
+@app.route('/evaluation/<student_id>/<course_order>', methods=['DELETE'])
+def delete_evaluation(student_id, course_order):
+    """Delete an evaluation"""
+    try:
+        success = db.delete_evaluation(student_id, course_order)
+
+        if success:
+            return jsonify({'message': 'Evaluation deleted successfully'}), 200
+        else:
+            return jsonify({'error': 'Evaluation not found or could not be deleted'}), 404
+    except Exception as e:
+        print(f"Delete evaluation error: {str(e)}")
+        return jsonify({'error': 'Failed to delete evaluation'}), 500
+
 @app.route('/evaluate', methods=['POST'])
 def evaluate():
     """Handle audio file upload and evaluation"""
